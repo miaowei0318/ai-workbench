@@ -18,12 +18,14 @@
   .logo-badge{width:40px;height:40px;background:var(--accent);color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700}
   .logo-title{font-weight:700;font-size:15px}
   .logo-sub{font-size:10px;color:var(--muted);letter-spacing:2px}
-  .group-label{font-size:11px;color:var(--muted);padding:12px 12px 5px}
-  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;font-size:14px;cursor:pointer;user-select:none}
-  .nav-item:hover{background:rgba(255,255,255,.5)}
-  .nav-item .badge{margin-left:auto;background:var(--accent);color:#fff;font-size:11px;padding:2px 9px;border-radius:20px}
+  .group-label{font-size:11px;color:var(--muted);padding:18px 12px 5px;letter-spacing:1px;opacity:.75}
+  .nav-item{position:relative;display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;font-size:14px;cursor:pointer;user-select:none;transition:background .15s ease}
+  .nav-item:hover{background:rgba(255,255,255,.55)}
+  .nav-item .nav-ic{width:22px;text-align:center;flex-shrink:0}
+  .nav-item .badge{display:none}
   .nav-item .soon{margin-left:auto;font-size:10px;color:var(--muted);background:rgba(255,255,255,.55);padding:2px 8px;border-radius:10px}
-  .nav-item.active{background:#fff;font-weight:600;box-shadow:0 2px 8px rgba(90,90,60,.10)}
+  .nav-item.active{background:#fff;font-weight:600;box-shadow:0 2px 8px rgba(90,90,60,.10);color:var(--accent-d)}
+  .nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:18px;border-radius:2px;background:var(--accent)}
   .store-card{margin-top:auto;background:var(--panel);border-radius:14px;padding:12px 14px;font-size:11px;color:var(--muted);line-height:1.7}
   .store-card b{color:var(--ink)}
   /* ===== 主区 ===== */
@@ -274,6 +276,7 @@
     .nav-mask{display:block;position:fixed;inset:0;z-index:1150;background:rgba(52,54,42,.35);opacity:0;pointer-events:none;transition:opacity .25s}
     body.nav-open .nav-mask{opacity:1;pointer-events:auto}
     main{padding-top:60px}
+    .nav-item{padding:12px;min-height:44px}
   }
 </style>
 </head>
@@ -283,18 +286,18 @@
   <aside class="sidebar">
     <div class="logo"><div class="logo-badge">导</div><div><div class="logo-title">AI导演工作台</div><div class="logo-sub">DIRECTOR STUDIO</div></div></div>
     <div class="group-label">生产流水线</div>
-    <div class="nav-item" data-mod="灵感速记">💡 <span>灵感速记</span><span class="badge" id="navIdeaCount">0</span></div>
-    <div class="nav-item active" data-mod="选题库">🎯 <span>选题库</span><span class="badge" id="navCount">0</span></div>
-    <div class="nav-item" data-mod="脚本写作室">✍️ <span>脚本写作室</span><span class="badge" id="navScriptCount">0</span></div>
-    <div class="nav-item" data-mod="制作与发布">🎬 <span>制作与发布</span><span class="badge" id="navProdCount">0</span></div>
-    <div class="nav-item" data-mod="数据复盘">📊 <span>数据复盘</span><span class="badge" id="navReviewCount">0</span></div>
+    <div class="nav-item" data-mod="灵感速记"><span class="nav-ic">💡</span><span>灵感速记</span><span class="badge" id="navIdeaCount">0</span></div>
+    <div class="nav-item active" data-mod="选题库"><span class="nav-ic">🎯</span><span>选题库</span><span class="badge" id="navCount">0</span></div>
+    <div class="nav-item" data-mod="脚本写作室"><span class="nav-ic">✍️</span><span>脚本写作室</span><span class="badge" id="navScriptCount">0</span></div>
+    <div class="nav-item" data-mod="制作与发布"><span class="nav-ic">🎬</span><span>制作与发布</span><span class="badge" id="navProdCount">0</span></div>
+    <div class="nav-item" data-mod="数据复盘"><span class="nav-ic">📊</span><span>数据复盘</span><span class="badge" id="navReviewCount">0</span></div>
     <div class="group-label">弹药库</div>
-    <div class="nav-item" data-mod="提示词库">🧪 <span>提示词库</span><span class="badge" id="navPromptCount">0</span></div>
-    <div class="nav-item" data-mod="导演参考库">🎞 <span>导演参考库</span><span class="badge" id="navRefCount">0</span></div>
-    <div class="nav-item" data-mod="爆款拆解库">🔥 <span>爆款拆解库</span><span class="badge" id="navHotCount">0</span></div>
+    <div class="nav-item" data-mod="提示词库"><span class="nav-ic">🧪</span><span>提示词库</span><span class="badge" id="navPromptCount">0</span></div>
+    <div class="nav-item" data-mod="导演参考库"><span class="nav-ic">🎞</span><span>导演参考库</span><span class="badge" id="navRefCount">0</span></div>
+    <div class="nav-item" data-mod="爆款拆解库"><span class="nav-ic">🔥</span><span>爆款拆解库</span><span class="badge" id="navHotCount">0</span></div>
     <div class="group-label">中枢与经营</div>
-    <div class="nav-item" data-mod="任务看板">📋 <span>任务看板</span><span class="badge" id="navTaskCount">0</span></div>
-    <div class="nav-item" data-mod="商务合作">🤝 <span>商务合作</span><span class="badge" id="navDealCount">0</span></div>
+    <div class="nav-item" data-mod="任务看板"><span class="nav-ic">📋</span><span>任务看板</span><span class="badge" id="navTaskCount">0</span></div>
+    <div class="nav-item" data-mod="商务合作"><span class="nav-ic">🤝</span><span>商务合作</span><span class="badge" id="navDealCount">0</span></div>
     <div class="store-card">
       <div id="backupStatus">☁️ 云备份：未连接</div>
       <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
