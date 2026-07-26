@@ -26,6 +26,13 @@
 - **手机端链路**：安卓 Obsidian + remotely save 插件（WebDAV，`https://dav.jianguoyun.com/dav/`，坚果云应用密码授权），手机库名必须叫 `Obsidian Vault` 与云端文件夹对齐；手机记的灵感 → 坚果云 → 电脑库 → 工作台「📥 从 Obsidian 读取」进列表
 - Obsidian 安装在 `D:\Users\Admin\AppData\Local\Programs\Obsidian\`（用户目录被 360 移到了 D 盘）
 
+## 线上部署（2026-07-26 已上线）
+
+- **GitHub Pages**：`https://miaowei0318.github.io/ai-workbench/`（仓库 `miaowei0318/ai-workbench`，public，main 分支根目录，legacy build）；本地 `ai-workbench` 是 git 仓库，远程 origin 已配
+- **自动发布**：`radar-daily.ps1` 采集完成后 `git add -A && commit && push`（失败重试 3 次、间隔 5 分钟）；`.gitignore` 排除 *.png / *.log / __pycache__
+- **访问注意**：github.com 主站在用户网络下间歇性被干扰（注册/授权/推送走它，用户已装 Watt Toolkit 加速应对）；github.io 托管域名实测国内正常，访客无需加速；若将来观众反馈打不开，再上 Gitee Pages 国内镜像（双 push）
+- **gh CLI**：`D:\kimi\bin\gh.exe`，已登录 miaowei0318（keyring），`gh auth setup-git` 已配好凭据助手，推送免交互
+
 ## 模块清单（10个，全部 v1 已完成）
 
 - 生产流水线：灵感速记 → 选题库 → 脚本写作室 → 制作与发布 → 数据复盘
