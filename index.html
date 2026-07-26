@@ -21,7 +21,7 @@
   .group-label{font-size:11px;color:var(--muted);padding:18px 12px 5px;letter-spacing:1px;opacity:.75}
   .nav-item{position:relative;display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;font-size:14px;cursor:pointer;user-select:none;transition:background .15s ease}
   .nav-item:hover{background:rgba(255,255,255,.55)}
-  .nav-item .nav-ic{width:22px;text-align:center;flex-shrink:0}
+  .nav-item .nav-ic{width:22px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
   .nav-item .badge{display:none}
   .nav-item .soon{margin-left:auto;font-size:10px;color:var(--muted);background:rgba(255,255,255,.55);padding:2px 8px;border-radius:10px}
   .nav-item.active{background:#fff;font-weight:600;box-shadow:0 2px 8px rgba(90,90,60,.10);color:var(--accent-d)}
@@ -284,20 +284,22 @@
   <button class="mobile-nav-btn" id="mobileNavBtn" aria-label="打开目录">☰</button>
   <div class="nav-mask" id="navMask"></div>
   <aside class="sidebar">
-    <div class="logo"><div class="logo-badge">导</div><div><div class="logo-title">AI导演工作台</div><div class="logo-sub">DIRECTOR STUDIO</div></div></div>
-    <div class="group-label">生产流水线</div>
-    <div class="nav-item" data-mod="灵感速记"><span class="nav-ic">💡</span><span>灵感速记</span><span class="badge" id="navIdeaCount">0</span></div>
-    <div class="nav-item active" data-mod="选题库"><span class="nav-ic">🎯</span><span>选题库</span><span class="badge" id="navCount">0</span></div>
-    <div class="nav-item" data-mod="脚本写作室"><span class="nav-ic">✍️</span><span>脚本写作室</span><span class="badge" id="navScriptCount">0</span></div>
-    <div class="nav-item" data-mod="制作与发布"><span class="nav-ic">🎬</span><span>制作与发布</span><span class="badge" id="navProdCount">0</span></div>
-    <div class="nav-item" data-mod="数据复盘"><span class="nav-ic">📊</span><span>数据复盘</span><span class="badge" id="navReviewCount">0</span></div>
-    <div class="group-label">弹药库</div>
-    <div class="nav-item" data-mod="提示词库"><span class="nav-ic">🧪</span><span>提示词库</span><span class="badge" id="navPromptCount">0</span></div>
-    <div class="nav-item" data-mod="导演参考库"><span class="nav-ic">🎞</span><span>导演参考库</span><span class="badge" id="navRefCount">0</span></div>
-    <div class="nav-item" data-mod="爆款拆解库"><span class="nav-ic">🔥</span><span>爆款拆解库</span><span class="badge" id="navHotCount">0</span></div>
-    <div class="group-label">中枢与经营</div>
-    <div class="nav-item" data-mod="任务看板"><span class="nav-ic">📋</span><span>任务看板</span><span class="badge" id="navTaskCount">0</span></div>
-    <div class="nav-item" data-mod="商务合作"><span class="nav-ic">🤝</span><span>商务合作</span><span class="badge" id="navDealCount">0</span></div>
+    <div class="logo"><div class="logo-badge">妙</div><div><div class="logo-title" style="font-size:13px">AI导演——妙微的工作台</div><div class="logo-sub">miaowei STUDIO</div></div></div>
+    <div class="group-label">开发管理</div>
+    <div class="nav-item" data-mod="灵感速记"><span class="nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg></span><span>1 灵感速记</span><span class="badge" id="navIdeaCount">0</span></div>
+    <div class="nav-item" data-mod="项目计划"><span class="nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg></span><span>2 项目计划</span></div>
+    <div class="nav-item" data-mod="Skills管理"><span class="nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></span><span>3 Skills 管理</span></div>
+    <div class="nav-item" data-mod="品牌合作"><span class="nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/><path d="m21 3 1 11h-2"/><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/><path d="M3 4h8"/></svg></span><span>4 品牌合作</span></div>
+    <div class="nav-item" data-mod="后台管理"><span class="nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg></span><span>5 后台管理</span></div>
+    <div class="group-label">内容运营</div>
+    <div class="nav-item" data-mod="爆款拆解库"><span class="nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span><span>6 爆款视频Lab</span><span class="badge" id="navHotCount">0</span></div>
+    <div class="nav-item active" data-mod="选题库"><span class="nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span><span>7 选题合集库</span><span class="badge" id="navCount">0</span></div>
+    <div class="nav-item" data-mod="脚本写作室"><span class="nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span><span>8 写作室</span><span class="badge" id="navScriptCount">0</span></div>
+    <div class="nav-item" data-mod="第二大脑"><span class="nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/><path d="M12 5v13"/></svg></span><span>9 第二大脑</span></div>
+    <div class="nav-item" data-mod="制作与发布"><span class="nav-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z"/><path d="m6.2 5.3 3.1 3.9"/><path d="m12.4 3.4 3.1 4"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></span><span>10 制作与发布</span><span class="badge" id="navProdCount">0</span></div>
+    <div style="display:none">
+      <span class="badge" id="navReviewCount">0</span><span class="badge" id="navPromptCount">0</span><span class="badge" id="navRefCount">0</span><span class="badge" id="navTaskCount">0</span><span class="badge" id="navDealCount">0</span>
+    </div>
     <div class="store-card">
       <div id="backupStatus">☁️ 云备份：未连接</div>
       <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
@@ -697,6 +699,21 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- ===== 第二大脑（设计稿骨架：子页结构已定型，功能逐步对接） ===== -->
+    <div id="viewBrain" style="display:none">
+      <div class="page-head">
+        <div class="page-title">🧠 第二大脑</div>
+        <div class="page-desc">把散落的信息变成内容卡片，让每一轮生产留下复利——主库在 Obsidian，AI 每日自动加工，人只做复核</div>
+      </div>
+      <div class="status-band" id="brainTabs" style="margin-bottom:14px">
+        <span class="sp on" data-btab="cards">9.1 内容卡片库</span>
+        <span class="sp" data-btab="lessons">9.2 经验方法库</span>
+        <span class="sp" data-btab="digest">9.3 收藏消化站</span>
+        <span class="sp" data-btab="admin">9.4 知识库管理</span>
+      </div>
+      <div style="background:var(--panel);border-radius:16px;box-shadow:0 2px 10px rgba(80,80,50,.07);padding:22px 24px;line-height:1.9;font-size:13px" id="brainTabPanel"></div>
     </div>
 
     <!-- ===== 占位视图 ===== -->
@@ -2644,10 +2661,10 @@ document.getElementById('btnHotImport').onclick = ()=>{
 };
 
 /* ================= 模块切换 ================= */
-const VIEWS = { '选题库':'viewTopics', '灵感速记':'viewIdeas', '脚本写作室':'viewScripts', '制作与发布':'viewProd', '数据复盘':'viewReview', '提示词库':'viewPrompts', '导演参考库':'viewRef', '爆款拆解库':'viewHot', '任务看板':'viewTasks', '商务合作':'viewDeals' };
-const HASH2MOD = { topics:'选题库', ideas:'灵感速记', scripts:'脚本写作室', prod:'制作与发布', review:'数据复盘', prompts:'提示词库', ref:'导演参考库', hot:'爆款拆解库', tasks:'任务看板', deals:'商务合作' };
-const MOD2HASH = { '选题库':'topics', '灵感速记':'ideas', '脚本写作室':'scripts', '制作与发布':'prod', '数据复盘':'review', '提示词库':'prompts', '导演参考库':'ref', '爆款拆解库':'hot', '任务看板':'tasks', '商务合作':'deals' };
-const ALL_VIEWS = ['viewTopics','viewIdeas','viewScripts','viewProd','viewReview','viewPrompts','viewRef','viewHot','viewTasks','viewDeals','viewPlaceholder'];
+const VIEWS = { '选题库':'viewTopics', '灵感速记':'viewIdeas', '脚本写作室':'viewScripts', '制作与发布':'viewProd', '数据复盘':'viewReview', '提示词库':'viewPrompts', '导演参考库':'viewRef', '爆款拆解库':'viewHot', '任务看板':'viewTasks', '商务合作':'viewDeals', '第二大脑':'viewBrain' };
+const HASH2MOD = { topics:'选题库', ideas:'灵感速记', scripts:'脚本写作室', prod:'制作与发布', review:'数据复盘', prompts:'提示词库', ref:'导演参考库', hot:'爆款拆解库', tasks:'任务看板', deals:'商务合作', brain:'第二大脑', plan:'项目计划', skills:'Skills管理', brand:'品牌合作', admin:'后台管理' };
+const MOD2HASH = { '选题库':'topics', '灵感速记':'ideas', '脚本写作室':'scripts', '制作与发布':'prod', '数据复盘':'review', '提示词库':'prompts', '导演参考库':'ref', '爆款拆解库':'hot', '任务看板':'tasks', '商务合作':'deals', '第二大脑':'brain', '项目计划':'plan', 'Skills管理':'skills', '品牌合作':'brand', '后台管理':'admin' };
+const ALL_VIEWS = ['viewTopics','viewIdeas','viewScripts','viewProd','viewReview','viewPrompts','viewRef','viewHot','viewTasks','viewDeals','viewBrain','viewPlaceholder'];
 function showModule(mod, updateHash = true){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.mod===mod));
   ALL_VIEWS.forEach(v=>{ const el=document.getElementById(v); if(el) el.style.display='none'; });
@@ -2663,6 +2680,20 @@ document.querySelectorAll('.nav-item').forEach(el=>{ el.onclick = ()=>{ showModu
 /* 手机端抽屉侧栏：☰ 开合、遮罩点击关闭 */
 document.getElementById('mobileNavBtn').onclick = ()=>document.body.classList.toggle('nav-open');
 document.getElementById('navMask').onclick = ()=>document.body.classList.remove('nav-open');
+
+/* ================= 第二大脑 · 子页签（设计稿） ================= */
+const BRAIN_TABS = {
+  cards:  '<b>9.1 内容卡片库（核心资产）</b><br>四维标签卡片墙：类型（💡观点洞察/📖教程技法/🎬案例拆解/📊行业数据/🗣金句台词/🎞参考片目）× 来源（灵感/雷达/收藏/复盘）× 话题（运镜/构图/配色/布光/提示词/工具/行业/账号运营）× 状态（待复核/已复核/⭐高价值/✅已用于）。<br>三个开关：<b>只看高价值</b>｜<b>只看待复核</b>｜<b>定向挖掘</b>（带着选题来捞卡片）。全文搜索带出处链接。<br><br>📌 流转：灵感速记、雷达"收进卡片"、收藏消化站三条通道进 inbox → AI 每日自动打标提炼 → 你只做复核。',
+  lessons:'<b>9.2 经验方法库</b><br>数据复盘沉淀的经验（加分行为/减分行为/中性观察）按话题归档，写新脚本前翻一遍；复盘结论一键回流成新选题。<br><br>📌 对应姜胡说的"经验复利"目录：把做过的事沉淀成可复用的方法。',
+  digest: '<b>9.3 收藏消化站</b><br>把"收藏了也不再看"的抖音/文章丢进来：粘贴链接或文案 → AI 消化成规范卡片进待复核队列，配"待消化"列表防堆积。<br><br>📌 设计宪法：收藏是死的，被消化、被检索、被用上的卡片才是活的。',
+  admin:  '<b>9.4 知识库管理</b><br>话题字典维护、信息源配置、复核队列、Obsidian 库连接与同步状态。'
+};
+function renderBrainTab(key){
+  document.querySelectorAll('#brainTabs .sp').forEach(s=>s.classList.toggle('on', s.dataset.btab===key));
+  document.getElementById('brainTabPanel').innerHTML = BRAIN_TABS[key] || BRAIN_TABS.cards;
+}
+document.querySelectorAll('#brainTabs .sp').forEach(s=>{ s.onclick = ()=>renderBrainTab(s.dataset.btab); });
+renderBrainTab('cards');
 function routeFromHash(){
   const h = location.hash.replace('#','');
   if(HASH2MOD[h]) showModule(HASH2MOD[h], false);
