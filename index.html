@@ -1,0 +1,2830 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI导演工作台 · 选题库</title>
+<style>
+  :root{
+    --bg:#F1F0E6; --side:#E9E8DA; --panel:#FBFAF3; --ink:#34362A; --muted:#8B8C7A;
+    --accent:#6C7D47; --accent-d:#55643A; --line:#DFDECE;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI","Microsoft YaHei",sans-serif}
+  body{display:flex;background:var(--bg);color:var(--ink);font-size:14px;min-height:100vh}
+  button{cursor:pointer;font-family:inherit}
+  /* ===== 侧边栏 ===== */
+  .sidebar{width:250px;background:var(--side);padding:18px 14px;display:flex;flex-direction:column;gap:3px;flex-shrink:0;position:sticky;top:0;height:100vh}
+  .logo{display:flex;gap:10px;align-items:center;padding:4px 8px 16px}
+  .logo-badge{width:40px;height:40px;background:var(--accent);color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700}
+  .logo-title{font-weight:700;font-size:15px}
+  .logo-sub{font-size:10px;color:var(--muted);letter-spacing:2px}
+  .group-label{font-size:11px;color:var(--muted);padding:12px 12px 5px}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;font-size:14px;cursor:pointer;user-select:none}
+  .nav-item:hover{background:rgba(255,255,255,.5)}
+  .nav-item .badge{margin-left:auto;background:var(--accent);color:#fff;font-size:11px;padding:2px 9px;border-radius:20px}
+  .nav-item .soon{margin-left:auto;font-size:10px;color:var(--muted);background:rgba(255,255,255,.55);padding:2px 8px;border-radius:10px}
+  .nav-item.active{background:#fff;font-weight:600;box-shadow:0 2px 8px rgba(90,90,60,.10)}
+  .store-card{margin-top:auto;background:var(--panel);border-radius:14px;padding:12px 14px;font-size:11px;color:var(--muted);line-height:1.7}
+  .store-card b{color:var(--ink)}
+  /* ===== 主区 ===== */
+  main{flex:1;padding:16px 22px;min-width:0}
+  .status-band{background:linear-gradient(90deg,#7C8C55,#5E7040);border-radius:16px;padding:12px 16px;display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+  .status-band .sp{background:rgba(255,255,255,.16);color:#fff;font-size:12px;padding:6px 16px;border-radius:20px;cursor:pointer;user-select:none}
+  .status-band .sp.on{background:#fff;color:var(--accent-d);font-weight:600}
+  .page-head{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
+  .page-title{font-size:20px;font-weight:700}
+  .page-desc{font-size:12px;color:var(--muted)}
+  .search-row{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+  .search-row input{flex:1;min-width:200px;border:1px solid var(--line);background:#fff;border-radius:20px;padding:10px 18px;font-size:13px;outline:none}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:20px;padding:0 16px;font-size:13px;color:var(--ink);height:40px}
+  .btn:hover{background:#F5F4EA}
+  .btn-primary{border:none;background:var(--accent);color:#fff;font-weight:600}
+  .btn-primary:hover{background:var(--accent-d)}
+  .filter-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .flabel{font-size:12px;color:var(--muted);width:44px;flex-shrink:0}
+  .pill{background:#fff;border:1px solid var(--line);border-radius:20px;padding:5px 14px;font-size:13px;cursor:pointer;user-select:none}
+  .pill span{color:var(--muted);font-size:12px;margin-left:4px}
+  .pill.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  .pill.active span{color:rgba(255,255,255,.85)}
+  .sort-row{display:flex;align-items:center;gap:8px;margin:4px 0 14px;font-size:12px;color:var(--muted)}
+  .sort-row select{border:1px solid var(--line);border-radius:8px;padding:4px 8px;font-size:12px;background:#fff;color:var(--ink);outline:none}
+  /* ===== 选题卡片 ===== */
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+  .series-block{grid-column:1/-1;margin-bottom:6px}
+  .series-head{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--panel);border-radius:14px;box-shadow:0 2px 10px rgba(80,80,50,.07);cursor:pointer;user-select:none;margin-bottom:12px;flex-wrap:wrap}
+  .series-head .series-name{font-size:14px;font-weight:700}
+  .series-head .series-st{font-size:11px;padding:3px 10px;border-radius:12px;background:#EFF0E2;color:var(--accent-d)}
+  .series-head.done .series-name{color:var(--muted)}
+  .series-head.done .series-st{background:#E9E9E9;color:#8A8F76}
+  .series-head .series-stats{font-size:12px;color:var(--muted)}
+  .series-head .series-ops{margin-left:auto;display:flex;gap:6px}
+  .series-head .series-arrow{color:var(--muted);font-size:12px;transition:transform .15s}
+  .series-block.collapsed .series-arrow{transform:rotate(-90deg)}
+  .series-block.collapsed .series-body{display:none}
+  .ep-badge{flex:none;font-size:11px;font-weight:700;color:#fff;background:linear-gradient(135deg,#7C8C55,#5E7040);border-radius:8px;padding:3px 8px;margin-top:1px}
+  .pend-group{font-size:11px;font-weight:700;color:var(--muted);margin:8px 0 4px}
+  /* ===== 导演雷达 ===== */
+  .radar{background:var(--panel);border-radius:16px;box-shadow:0 2px 10px rgba(80,80,50,.07);margin-bottom:18px;padding:14px 16px 16px}
+  .radar-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .radar-title{font-size:15px;font-weight:700}
+  .radar-meta{font-size:11px;color:var(--muted)}
+  .radar-tip{margin-left:auto;font-size:11px;color:var(--muted)}
+  .cat-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .ccard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 15px 12px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:7px}
+  .ccard:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 16px rgba(90,90,50,.10)}
+  .ccard-top{display:flex;align-items:center;gap:8px}
+  .ccard-ico{font-size:19px}
+  .ccard-name{font-size:14px;font-weight:600}
+  .ccard-badge{margin-left:auto;font-size:11px;color:var(--accent-d);background:#EFF0E2;border-radius:10px;padding:2px 9px}
+  .ccard-badge.zero{color:var(--muted);background:#F0F0E8}
+  .ccard-desc{font-size:11px;color:var(--muted);line-height:1.5}
+  .ccard-prev{font-size:11.5px;color:#5A5C4C;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;border-top:1px dashed var(--line);padding-top:7px}
+  .radar-empty{grid-column:1/-1;padding:18px;text-align:center;color:var(--muted);font-size:12px;line-height:1.8}
+  /* 雷达列表弹窗 */
+  .rmodal{width:680px;padding:0;overflow:hidden;display:flex;flex-direction:column}
+  .rmodal-head{display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line);flex-shrink:0}
+  .rmodal-title{font-size:15px;font-weight:700}
+  .rmodal-meta{font-size:11px;color:var(--muted)}
+  .rmodal-close{margin-left:auto;border:1px solid var(--line);background:#fff;border-radius:10px;width:28px;height:28px;font-size:13px;color:var(--muted);cursor:pointer}
+  .rmodal-close:hover{color:var(--ink);border-color:var(--accent)}
+  .rmodal-list{overflow-y:auto;padding:10px 14px 14px}
+  .rmodal-list::-webkit-scrollbar{width:8px}
+  .rmodal-list::-webkit-scrollbar-thumb{background:#CFD1B8;border-radius:4px}
+  .rmodal-empty{text-align:center;color:var(--muted);font-size:13px;padding:38px 0}
+  .ritem{border:1px solid var(--line);border-radius:13px;background:#fff;margin-bottom:8px;overflow:hidden;transition:border-color .15s}
+  .ritem:hover{border-color:#C9CBAE}
+  .ritem-head{display:flex;align-items:center;gap:8px;padding:11px 13px;cursor:pointer;user-select:none}
+  .ritem-tag{font-size:10px;border-radius:8px;padding:2px 7px;flex-shrink:0;background:#EFF0E2;color:var(--accent-d)}
+  .ritem-title{font-size:13.5px;font-weight:600;flex:1;line-height:1.45}
+  .ritem-state{font-size:10px;border-radius:8px;padding:2px 7px;flex-shrink:0;color:var(--accent-d);background:#EFF0E2}
+  .ritem-src{font-size:11px;color:var(--muted);white-space:nowrap;flex-shrink:0}
+  .ritem-chev{font-size:11px;color:var(--muted);transition:transform .18s;flex-shrink:0}
+  .ritem.open .ritem-chev{transform:rotate(180deg)}
+  .ritem.open{border-color:var(--accent)}
+  .ritem-body{display:none;padding:0 13px 12px;border-top:1px dashed var(--line)}
+  .ritem.open .ritem-body{display:block}
+  .ritem-learn{font-size:12.5px;color:#4E5040;line-height:1.75;padding:10px 0 8px}
+  .ritem-learn b{color:var(--ink)}
+  .ritem-angle{font-size:12px;color:var(--accent-d);background:#EFF0E2;border-radius:10px;padding:7px 11px;line-height:1.6;margin-bottom:9px}
+  .ritem-foot{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .ritem-link{font-size:11px;color:var(--muted)}
+  .ritem-link:hover{color:var(--accent-d);text-decoration:underline}
+  .ritem-acts{margin-left:auto;display:flex;gap:6px}
+  .r-pick{display:flex;gap:6px;align-items:center;margin-left:auto}
+  .r-pick select{border:1px solid var(--line);border-radius:8px;padding:4px 8px;font-size:12px;background:#fff;color:var(--ink);max-width:220px}
+  .ritem-ev{font-size:10px;border-radius:8px;padding:2px 7px;flex-shrink:0;background:#EAF3E2;color:#4E6B3A;font-weight:700}
+  .ritem-prompt{display:flex;align-items:flex-start;gap:8px;background:#F4F4EA;border:1px dashed var(--line);border-radius:10px;padding:8px 11px;margin-bottom:9px}
+  .ritem-prompt-text{flex:1;font-size:12px;color:#4E5040;line-height:1.6;font-family:Consolas,monospace;word-break:break-all;white-space:pre-wrap}
+  .ritem-prompt .mini-btn{flex-shrink:0}
+  .mini-btn.plain{color:var(--muted)}
+  .card{background:var(--panel);border-radius:16px;padding:16px;box-shadow:0 2px 10px rgba(80,80,50,.07);display:flex;flex-direction:column;gap:10px}
+  .card-top{display:flex;align-items:flex-start;gap:10px}
+  .score{flex-shrink:0;width:46px;height:46px;border-radius:12px;background:var(--accent);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+  .score b{font-size:17px}
+  .score small{font-size:9px;opacity:.85}
+  .score.s-low{background:#A8AA96}
+  .card-title{font-size:15px;font-weight:600;flex:1}
+  .card-angle{font-size:13px;color:#5A5C4C;line-height:1.6}
+  .meta-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .chip{font-size:11px;background:#EFF0E2;color:var(--accent-d);border-radius:12px;padding:3px 10px}
+  .src{font-size:11px;border-radius:12px;padding:3px 10px;background:#E7E3D2;color:#7A6B3F}
+  .status{font-size:11px;border-radius:12px;padding:3px 10px;font-weight:600}
+  .st-待评估{background:#ECECE2;color:#7C7E6C} .st-待定{background:#F0E8CE;color:#8A6D2F}
+  .st-已排产{background:#E2E8D2;color:#55643A} .st-已发布{background:#D8E4C8;color:#3F6128}
+  .st-搁置{background:#E6E6E0;color:#9A9C8E}
+  .card-foot{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:8px;border-top:1px dashed var(--line)}
+  .date{font-size:11px;color:var(--muted);margin-right:auto}
+  .mini-btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:4px 10px;font-size:12px;color:var(--ink)}
+  .mini-btn:hover{background:#F5F4EA}
+  .mini-btn.danger{color:#A04343}
+  .subscores{font-size:11px;color:var(--muted)}
+  /* ===== 占位视图 ===== */
+  .placeholder{display:none;text-align:center;padding:120px 20px;color:var(--muted)}
+  .placeholder .big{font-size:52px;margin-bottom:16px}
+  .placeholder h2{color:var(--ink);margin-bottom:8px}
+  /* ===== 灵感速记 ===== */
+  .idea-input-card{background:var(--panel);border-radius:16px;padding:14px;box-shadow:0 2px 10px rgba(80,80,50,.07)}
+  .idea-input-card textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 44px 12px 14px;font-size:14px;background:#fff;color:var(--ink);outline:none;resize:vertical;min-height:190px;font-family:inherit;line-height:1.6}
+  .idea-input-foot{display:flex;align-items:center;gap:10px;margin-top:10px}
+  .idea-search-row{display:flex;justify-content:flex-start;align-items:center;gap:12px;margin-top:14px}
+  .idea-search-row input{width:260px;border:1px solid var(--line);border-radius:12px;padding:9px 14px;font-size:13px;background:#fff;color:var(--ink);outline:none;font-family:inherit}
+  .idea-search-row #ideaStats{font-size:12px;color:var(--muted)}
+  .ta-wrap{position:relative}
+  .ta-expand{position:absolute;top:8px;right:10px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 8px;cursor:pointer;font-size:13px;color:var(--muted);line-height:1.2}
+  .ta-expand:hover{color:var(--accent-d);border-color:var(--accent)}
+  .idea-input-card textarea,.idea-expand-card textarea{overflow-y:auto}
+  .idea-input-card textarea::-webkit-scrollbar,.idea-expand-card textarea::-webkit-scrollbar{width:8px}
+  .idea-input-card textarea::-webkit-scrollbar-thumb,.idea-expand-card textarea::-webkit-scrollbar-thumb{background:#CFD1B8;border-radius:4px}
+  .idea-input-card textarea::-webkit-scrollbar-track,.idea-expand-card textarea::-webkit-scrollbar-track{background:transparent}
+  .idea-expand-card{display:flex;flex-direction:column;width:min(960px,94vw);height:min(72vh,660px);max-height:none;overflow:visible}
+  .idea-expand-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:14px;font-weight:600;color:var(--ink)}
+  .idea-expand-card textarea{flex:1;width:100%;border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:15px;background:#fff;color:var(--ink);outline:none;resize:none;font-family:inherit;line-height:1.7}
+  .idea-expand-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:12px}
+  .idea-list{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+  .idea-card{background:var(--panel);border-radius:16px;padding:14px 16px;box-shadow:0 2px 10px rgba(80,80,50,.07)}
+  .idea-text{font-size:14px;line-height:1.7;white-space:pre-wrap;margin-bottom:8px}
+  .idea-card .card-foot{border:none;padding-top:6px}
+  /* ===== 脚本写作室 ===== */
+  .script-wrap{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start}
+  .side-title{font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600;display:flex;align-items:center;justify-content:space-between}
+  .pending-card,.script-card{background:var(--panel);border-radius:12px;padding:10px 12px;margin-bottom:8px;box-shadow:0 2px 8px rgba(80,80,50,.06);cursor:pointer}
+  .script-card.active{outline:2px solid var(--accent)}
+  .script-card .t{font-size:13px;font-weight:600;margin-bottom:4px}
+  .script-card .m{font-size:11px;color:var(--muted)}
+  .pending-card{display:flex;align-items:center;gap:8px}
+  .pending-card .t{flex:1;font-size:13px}
+  .script-editor{background:var(--panel);border-radius:16px;padding:18px;box-shadow:0 2px 10px rgba(80,80,50,.07);min-height:400px}
+  .script-empty{color:var(--muted);text-align:center;padding:120px 0;font-size:13px}
+  .link-topic{font-size:12px;color:var(--accent-d);background:#EFF0E2;border-radius:10px;padding:6px 12px}
+  .danger-text{color:#A04343}
+  /* --- Excel 式分镜表 --- */
+  .sheet-head{display:flex;gap:10px;margin-bottom:10px}
+  .sh-title{flex:1.1;font-size:16px;font-weight:700;border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:#fff;color:var(--ink);outline:none}
+  .sh-gm{flex:1.3;border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:#fff;color:var(--ink);outline:none;font-size:13px}
+  .sheet-meta{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+  .sheet-meta select{border:1px solid var(--line);border-radius:10px;padding:7px 10px;background:#fff;font-size:12px;color:var(--ink)}
+  .autosave{color:var(--accent);font-size:11px}
+  .sheet{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+  .sheet-row{display:grid;grid-template-columns:34px 1.1fr 1.2fr 96px 90px .45fr 96px;border-bottom:1px solid var(--line)}
+  .sheet-row:last-child{border-bottom:none}
+  .sheet-th{background:#EFF0E2;font-size:12px;color:var(--accent-d);font-weight:600}
+  .sheet-th>div{padding:8px}
+  .c-no{display:flex;align-items:flex-start;justify-content:center;padding-top:12px;font-size:11px;color:var(--muted)}
+  .sheet-row textarea{width:100%;border:none;outline:none;resize:none;font-family:inherit;font-size:13px;line-height:1.6;padding:8px;background:transparent;color:var(--ink);display:block;overflow:hidden}
+  .sheet-row textarea:focus{background:#F7F6EC}
+  .c-line,.c-visual{border-right:1px solid var(--line)}
+  .c-src,.c-st{padding:3px;border-right:1px solid var(--line);display:flex;align-items:flex-start}
+  .c-src select,.c-st select{width:100%;border:none;background:transparent;font-size:12px;padding:6px 2px;outline:none;color:var(--ink);font-family:inherit}
+  .c-sfx{border-right:1px solid var(--line)}
+  .c-sfx input{width:100%;border:none;outline:none;font-size:12px;padding:8px;background:transparent;color:var(--ink);font-family:inherit}
+  .c-ops{display:flex;align-items:flex-start;justify-content:center;gap:2px;padding-top:7px}
+  .c-ops button{border:none;background:transparent;cursor:pointer;font-size:12px;padding:2px 3px;opacity:.5}
+  .c-ops button:hover{opacity:1}
+  .sel-待制作{color:#9A9C8E} .sel-制作中{color:#B08D3E} .sel-已完成{color:#55643A;font-weight:600}
+  #importPreview{margin-top:10px;font-size:12px;max-height:220px;overflow:auto}
+  #importPreview table{border-collapse:collapse;width:100%;background:#fff}
+  #importPreview td,#importPreview th{border:1px solid var(--line);padding:4px 8px;font-size:11px;text-align:left;vertical-align:top}
+  /* ===== 通用（新模块） ===== */
+  .toolbar{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+  .toolbar input[type=text]{flex:1;min-width:180px;border:1px solid var(--line);background:#fff;border-radius:20px;padding:9px 16px;font-size:13px;outline:none}
+  .kanban{display:grid;gap:12px;align-items:start}
+  .kb-col{background:rgba(255,255,255,.45);border-radius:14px;padding:10px}
+  .kb-head{font-size:13px;font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;padding:0 4px}
+  .kb-head .n{font-size:11px;background:#fff;border-radius:10px;padding:1px 8px;color:var(--muted)}
+  .kb-card{background:var(--panel);border-radius:12px;padding:12px;margin-bottom:8px;box-shadow:0 2px 8px rgba(80,80,50,.06);cursor:pointer}
+  .kb-card:hover{box-shadow:0 4px 14px rgba(80,80,50,.12)}
+  .kb-card .t{font-size:13px;font-weight:600;margin-bottom:6px}
+  .kb-card .m{font-size:11px;color:var(--muted);line-height:1.7}
+  .kb-card .row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .move-btns{display:flex;gap:4px;margin-top:8px}
+  .move-btns button{border:1px solid var(--line);background:#fff;border-radius:6px;font-size:11px;padding:2px 8px;cursor:pointer}
+  .grid-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+  .g-card{background:var(--panel);border-radius:14px;padding:14px;box-shadow:0 2px 10px rgba(80,80,50,.07);display:flex;flex-direction:column;gap:8px}
+  .g-card .t{font-size:14px;font-weight:600}
+  .g-card .d{font-size:12px;color:#5A5C4C;line-height:1.7;white-space:pre-wrap}
+  .g-card .foot{display:flex;gap:6px;margin-top:auto;padding-top:8px;border-top:1px dashed var(--line);align-items:center}
+  .g-card .foot .date{font-size:11px;color:var(--muted);margin-right:auto}
+  .metric-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+  .metric{background:var(--panel);border-radius:14px;padding:14px;box-shadow:0 2px 10px rgba(80,80,50,.07)}
+  .metric .v{font-size:22px;font-weight:700;color:var(--accent-d)}
+  .metric .k{font-size:11px;color:var(--muted);margin-top:2px}
+  .tbl{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+  .tbl th{background:#EFF0E2;color:var(--accent-d);font-size:12px;text-align:left;padding:8px 10px}
+  .tbl td{border-top:1px solid var(--line);font-size:12px;padding:8px 10px;vertical-align:top}
+  .tbl input,.tbl select{border:none;outline:none;background:transparent;font-size:12px;width:100%;font-family:inherit;color:var(--ink)}
+  .tbl input:focus,.tbl select:focus{background:#F7F6EC}
+  .rate{font-weight:700}
+  .r5{color:#55643A}.r4{color:#6C7D47}.r3{color:#B08D3E}.r2{color:#A8AA96}.r1{color:#A8AA96}
+  .progress-line{height:6px;background:#E4E3D3;border-radius:3px;overflow:hidden;margin-top:6px}
+  .progress-line i{display:block;height:100%;background:var(--accent);border-radius:3px}
+  .sec-title{font-size:15px;font-weight:700;margin:18px 0 10px;display:flex;align-items:center;gap:10px}
+  .sec-title .btn{font-size:12px;height:32px}
+  .inline-add{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+  .obsidian-bar{display:flex;align-items:center;gap:10px;background:var(--panel);border-radius:12px;padding:10px 14px;font-size:12px;color:var(--muted);margin-bottom:12px;box-shadow:0 2px 8px rgba(80,80,50,.06)}
+  .obsidian-bar span{flex:1}
+  .inline-add select,.inline-add input{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;font-size:12px;outline:none;font-family:inherit;color:var(--ink)}
+  .inline-add input{flex:1;min-width:180px}
+  .chip.plus{background:#E6EBD8;color:#55643A}
+  .chip.minus{background:#F0E3D9;color:#A04343}
+  .chip.neutral{background:#EFF0E2;color:var(--muted)}
+  .tbl tbody tr{cursor:pointer}
+  .tbl tbody tr:hover{background:#F7F6EC}
+  /* ===== 弹窗 ===== */
+  .mask{position:fixed;inset:0;background:rgba(60,60,40,.35);display:none;align-items:center;justify-content:center;z-index:50}
+  .mask.show{display:flex}
+  .modal{background:var(--panel);border-radius:18px;padding:22px;width:560px;max-width:94vw;max-height:88vh;overflow:auto;box-shadow:0 12px 40px rgba(60,60,40,.25)}
+  .modal h3{font-size:16px;margin-bottom:14px}
+  .form-row{margin-bottom:12px}
+  .form-row label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+  .form-row input[type=text],.form-row textarea,.form-row select{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:13px;background:#fff;color:var(--ink);outline:none;font-family:inherit}
+  .form-row textarea{resize:vertical;min-height:60px}
+  .tag-picker{display:flex;gap:6px;flex-wrap:wrap}
+  .tag-picker .t{border:1px solid var(--line);background:#fff;border-radius:14px;padding:4px 12px;font-size:12px;cursor:pointer;user-select:none}
+  .tag-picker .t.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .modal-btns{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+  .empty{text-align:center;color:var(--muted);padding:80px 0;font-size:13px}
+  @media (max-width:860px){.sidebar{display:none}}
+</style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo"><div class="logo-badge">导</div><div><div class="logo-title">AI导演工作台</div><div class="logo-sub">DIRECTOR STUDIO</div></div></div>
+    <div class="group-label">生产流水线</div>
+    <div class="nav-item" data-mod="灵感速记">💡 <span>灵感速记</span><span class="badge" id="navIdeaCount">0</span></div>
+    <div class="nav-item active" data-mod="选题库">🎯 <span>选题库</span><span class="badge" id="navCount">0</span></div>
+    <div class="nav-item" data-mod="脚本写作室">✍️ <span>脚本写作室</span><span class="badge" id="navScriptCount">0</span></div>
+    <div class="nav-item" data-mod="制作与发布">🎬 <span>制作与发布</span><span class="badge" id="navProdCount">0</span></div>
+    <div class="nav-item" data-mod="数据复盘">📊 <span>数据复盘</span><span class="badge" id="navReviewCount">0</span></div>
+    <div class="group-label">弹药库</div>
+    <div class="nav-item" data-mod="提示词库">🧪 <span>提示词库</span><span class="badge" id="navPromptCount">0</span></div>
+    <div class="nav-item" data-mod="导演参考库">🎞 <span>导演参考库</span><span class="badge" id="navRefCount">0</span></div>
+    <div class="nav-item" data-mod="爆款拆解库">🔥 <span>爆款拆解库</span><span class="badge" id="navHotCount">0</span></div>
+    <div class="group-label">中枢与经营</div>
+    <div class="nav-item" data-mod="任务看板">📋 <span>任务看板</span><span class="badge" id="navTaskCount">0</span></div>
+    <div class="nav-item" data-mod="商务合作">🤝 <span>商务合作</span><span class="badge" id="navDealCount">0</span></div>
+    <div class="store-card">
+      <div id="backupStatus">☁️ 云备份：未连接</div>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+        <button class="mini-btn" id="btnBackupConnect">🔗 连接备份</button>
+        <button class="mini-btn" id="btnBackupNow" style="display:none">☁️ 立即备份</button>
+        <button class="mini-btn" id="btnBackupRestore" style="display:none">📥 恢复</button>
+      </div>
+      <div style="font-size:11px;margin-top:6px;color:var(--muted)">灵感速记 → Obsidian 已打通 ✅</div>
+    </div>
+  </aside>
+
+  <main>
+    <!-- ===== 选题库视图 ===== -->
+    <div id="viewTopics">
+      <div class="status-band" id="statusBand"></div>
+      <div class="page-head">
+        <div class="page-title">🎯 选题库</div>
+        <div class="page-desc">合集（系列）→ 选题（一集）：待定 → 已排产 → 已发布，简单流转</div>
+      </div>
+      <!-- ===== 导演雷达 ===== -->
+      <div class="radar">
+        <div class="radar-head">
+          <span class="radar-title">📡 导演雷达</span>
+          <span class="radar-meta" id="radarMeta"></span>
+          <span class="radar-tip">每天 10 分钟：学一个新技法，捡一个新选题</span>
+        </div>
+        <div class="cat-cards" id="catCards"></div>
+      </div>
+      <div class="search-row">
+        <input id="searchInput" placeholder="🔍 搜索选题 / 切入角度 / 标签...">
+        <span id="totalInfo" style="align-self:center;font-size:12px;color:var(--muted);white-space:nowrap"></span>
+        <button class="btn btn-primary" id="btnNew">+ 新建选题</button>
+      </div>
+      <div class="cards" id="cards"></div>
+    </div>
+    <!-- ===== 灵感速记视图 ===== -->
+    <div id="viewIdeas" style="display:none">
+      <div class="page-head">
+        <div class="page-title">💡 灵感速记</div>
+        <div class="page-desc">想到就记，别琢磨。手机上打开本页，用输入法的语音转文字直接说</div>
+      </div>
+      <div class="obsidian-bar">
+        <span id="obsidianStatus">☁️ Obsidian：检测中...</span>
+        <button class="btn" id="btnObsidianRead" style="display:none">📥 从 Obsidian 读取</button>
+        <button class="btn" id="btnObsidianSyncAll" style="display:none">⬆ 同步历史灵感</button>
+        <button class="btn" id="btnObsidianConnect">🔗 连接 Obsidian 库</button>
+      </div>
+      <div class="idea-input-card">
+        <div class="ta-wrap">
+          <textarea id="ideaInput" placeholder="💡 想到什么就说什么...（Ctrl+Enter 快速记录）"></textarea>
+          <button class="ta-expand" id="btnIdeaExpand" title="放大编辑（全屏专注模式）">⤢</button>
+        </div>
+        <div class="idea-input-foot">
+          <button class="btn btn-primary" id="btnIdeaAdd" style="margin-left:auto">＋ 记录</button>
+        </div>
+      </div>
+      <div class="idea-search-row">
+        <input id="ideaSearch" placeholder="🔍 搜索灵感关键字...">
+        <span id="ideaStats"></span>
+      </div>
+      <div class="idea-list" id="ideaList"></div>
+    </div>
+
+    <!-- ===== 脚本写作室视图 ===== -->
+    <div id="viewScripts" style="display:none">
+      <div class="page-head">
+        <div class="page-title">✍️ 脚本写作室</div>
+        <div class="page-desc">台词驱动画面：一两句台词 = 一行 = 一个镜头，和 Excel 一样的写法</div>
+      </div>
+      <div class="script-wrap">
+        <div class="script-side">
+          <div class="side-title">🎯 待写选题（已排产）</div>
+          <div id="pendingTopics"></div>
+          <div class="side-title" style="margin-top:16px">📝 我的脚本 <button class="mini-btn" id="btnNewScript">＋空白</button></div>
+          <div id="scriptList"></div>
+        </div>
+        <div class="script-editor">
+          <div class="script-empty" id="scriptEmpty">← 从左侧选一个选题开始写，或打开已有脚本</div>
+          <div id="scriptForm" style="display:none">
+            <div class="sheet-head">
+              <input type="text" id="sTitle" class="sh-title" placeholder="脚本标题">
+              <input type="text" id="sGongming" class="sh-gm" placeholder="共鸣点：这条片子让观众得到什么？">
+            </div>
+            <div class="sheet-meta">
+              <span class="link-topic" id="sTopic"></span>
+              <span id="scriptStats"></span>
+              <span class="autosave" id="autoSaveTip"></span>
+              <select id="sStatus"><option>草稿</option><option>已完成</option></select>
+              <button class="btn" id="btnScriptAi">⧉ 分镜脚本指令</button>
+              <button class="btn" id="btnScriptImport">📥 导入</button>
+              <button class="btn danger-text" id="btnScriptDel">删除脚本</button>
+            </div>
+            <div class="sheet">
+              <div class="sheet-row sheet-th">
+                <div class="c-no">#</div><div class="c-line">文案/台词</div><div class="c-visual">画面描述</div>
+                <div class="c-src">素材来源</div><div class="c-st">完成状态</div><div class="c-sfx">音效</div><div class="c-ops">操作</div>
+              </div>
+              <div id="sheetBody"></div>
+            </div>
+            <button class="btn" id="btnAddRow" style="margin-top:10px">＋ 加一行</button>
+          </div>
+        </div>
+      </div>
+      <!-- 导入脚本弹窗 -->
+      <div class="mask" id="importScriptMask">
+        <div class="modal" style="width:720px">
+          <h3>📥 导入脚本</h3>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.8">
+            <b>方式一（推荐）</b>：在 Excel 里选中脚本区域后复制（列顺序：文案/台词、画面描述，可选：素材来源、完成状态、音效），粘贴到下面框里。<br>
+            <b>方式二</b>：点「选择文件」导入 CSV / 文本文件。<b>方式三</b>：直接粘贴 AI 返回的 JSON。
+          </p>
+          <div class="form-row"><textarea id="importScriptText" style="min-height:140px;font-size:12px" placeholder="在这里 Ctrl+V 粘贴 Excel 内容..."></textarea></div>
+          <div style="margin-bottom:8px"><button class="btn" id="btnImportFile">📁 选择CSV/文本文件</button></div>
+          <div id="importPreview"></div>
+          <div class="modal-btns">
+            <button class="btn" id="btnImportScriptCancel">取消</button>
+            <button class="btn btn-primary" id="btnImportScriptParse">解析预览</button>
+            <button class="btn btn-primary" id="btnImportScriptApply" style="display:none">确认导入</button>
+          </div>
+        </div>
+      </div>
+      <input type="file" id="csvFileInput" accept=".csv,.tsv,.txt" style="display:none">
+    </div>
+
+    <!-- ===== 制作与发布视图 ===== -->
+    <div id="viewProd" style="display:none">
+      <div class="page-head">
+        <div class="page-title">🎬 制作与发布</div>
+        <div class="page-desc">每条视频一张卡：拍摄/AI生成 → 剪辑 → 发布排期，◀ ▶ 一键推进</div>
+      </div>
+      <div class="status-band" id="prodBand"></div>
+      <div class="toolbar">
+        <input type="text" id="prodSearch" placeholder="🔍 搜索视频标题...">
+        <button class="btn" id="btnProdAi">⧉ 发布策略指令</button>
+        <button class="btn btn-primary" id="btnProdNew">＋ 新建制作单</button>
+      </div>
+      <div class="sec-title" style="margin-top:0">📥 待立项（「已完成」脚本，还没建制作单）</div>
+      <div id="prodPending"></div>
+      <div class="kanban" id="prodKanban" style="grid-template-columns:repeat(5,1fr);margin-top:14px"></div>
+      <!-- 制作单详情弹窗 -->
+      <div class="mask" id="prodMask">
+        <div class="modal" style="width:640px">
+          <h3>🎬 制作单</h3>
+          <input type="hidden" id="pId">
+          <div class="form-row"><label>标题</label><input type="text" id="pTitle"></div>
+          <div class="form-row"><label>关联脚本</label><div class="link-topic" id="pScript"></div></div>
+          <div class="form-row"><label>发布排期与链接</label>
+            <table class="tbl">
+              <tr><th style="width:80px">平台</th><th style="width:150px">计划/发布日期</th><th>链接</th></tr>
+              <tr><td>抖音</td><td><input id="pD0" placeholder="2026-07-25"></td><td><input id="pL0" placeholder="https://..."></td></tr>
+              <tr><td>小红书</td><td><input id="pD1"></td><td><input id="pL1"></td></tr>
+              <tr><td>B站</td><td><input id="pD2"></td><td><input id="pL2"></td></tr>
+              <tr><td>视频号</td><td><input id="pD3"></td><td><input id="pL3"></td></tr>
+            </table>
+          </div>
+          <div class="form-row"><label>制作备注（拍摄/剪辑事项）</label><textarea id="pNote"></textarea></div>
+          <div class="modal-btns">
+            <button class="btn danger-text" id="btnProdDel">删除</button>
+            <button class="btn" id="btnProdCancel">关闭</button>
+            <button class="btn btn-primary" id="btnProdSave">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 数据复盘视图 ===== -->
+    <div id="viewReview" style="display:none">
+      <div class="page-head">
+        <div class="page-title">📊 数据复盘</div>
+        <div class="page-desc">发布后把数据录进来，自动算赞播比/评播比；复盘结论沉淀成经验，下次创作前翻一遍</div>
+      </div>
+      <div class="metric-grid" id="reviewMetrics"></div>
+      <div class="sec-title" style="margin-top:0">🎬 作品数据（点击行编辑）</div>
+      <div class="toolbar">
+        <input type="text" id="postSearch" placeholder="🔍 搜索视频标题...">
+        <button class="btn" id="btnReviewAi">⧉ 复盘分析指令</button>
+        <button class="btn btn-primary" id="btnPostNew">＋ 录数据</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="tbl" id="postTable">
+          <thead><tr><th>标题</th><th>平台</th><th>日期</th><th>播放</th><th>点赞</th><th>评论</th><th>收藏</th><th>涨粉</th><th>赞播比</th><th>评播比</th></tr></thead>
+          <tbody id="postTbody"></tbody>
+        </table>
+      </div>
+      <div class="sec-title">🧠 经验库（下次创作前翻一遍）</div>
+      <div class="filter-row"><span class="flabel">类型</span><span id="lessonFilters"></span></div>
+      <div class="inline-add">
+        <select id="lType"><option>加分行为</option><option>减分行为</option><option>中性观察</option></select>
+        <input type="text" id="lContent" placeholder="比如：开头 3 秒直接上对比画面，完播明显更高">
+        <input type="text" id="lSource" placeholder="来源（哪条视频/哪次观察）" style="max-width:220px;flex:none">
+        <button class="btn btn-primary" id="btnLessonAdd">＋ 记一条</button>
+        <button class="btn" id="btnLessonImport">📥 导入经验JSON</button>
+      </div>
+      <div class="grid-cards" id="lessonList"></div>
+      <!-- 作品数据弹窗 -->
+      <div class="mask" id="postMask">
+        <div class="modal">
+          <h3>🎬 作品数据</h3>
+          <input type="hidden" id="poId">
+          <div class="form-row"><label>视频标题 *</label><input type="text" id="poTitle"></div>
+          <div class="form-row"><label>平台</label><select id="poPlatform"><option>抖音</option><option>小红书</option><option>B站</option><option>视频号</option><option>其他</option></select></div>
+          <div class="form-row"><label>发布日期</label><input type="text" id="poDate" placeholder="2026-07-25"></div>
+          <div class="form-row"><label>数据（填整数，如 128000）</label>
+            <div class="score-grid" style="grid-template-columns:repeat(5,1fr)">
+              <div><label>播放</label><input type="text" id="poPlays"></div>
+              <div><label>点赞</label><input type="text" id="poLikes"></div>
+              <div><label>评论</label><input type="text" id="poComments"></div>
+              <div><label>收藏</label><input type="text" id="poFavs"></div>
+              <div><label>涨粉</label><input type="text" id="poFollows"></div>
+            </div>
+          </div>
+          <div class="modal-btns">
+            <button class="btn danger-text" id="btnPostDel">删除</button>
+            <button class="btn" id="btnPostCancel">关闭</button>
+            <button class="btn btn-primary" id="btnPostSave">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 通用 JSON 导入弹窗（复盘/提示词/参考/爆款共用） ===== -->
+    <div class="mask" id="jsonMask">
+      <div class="modal" style="width:640px">
+        <h3 id="jsonTitle">📥 导入 JSON</h3>
+        <p id="jsonHint" style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.8"></p>
+        <div class="form-row"><textarea id="jsonText" style="min-height:180px;font-size:12px" placeholder='粘贴 AI 返回的 JSON 数组 [{...}]'></textarea></div>
+        <div class="modal-btns">
+          <button class="btn" id="btnJsonCancel">取消</button>
+          <button class="btn btn-primary" id="btnJsonApply">解析并导入</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 任务看板视图 ===== -->
+    <div id="viewTasks" style="display:none">
+      <div class="page-head">
+        <div class="page-title">📋 任务看板</div>
+        <div class="page-desc">今天要干什么一眼看清；「同步建议任务」会从选题库/脚本/制作单里自动捞出该做的事</div>
+      </div>
+      <div class="toolbar">
+        <input type="text" id="taskInput" placeholder="快速添加任务，回车直接入库...">
+        <button class="btn" id="btnTaskSync">⚡ 同步建议任务</button>
+      </div>
+      <div class="kanban" id="taskKanban" style="grid-template-columns:repeat(3,1fr)"></div>
+    </div>
+
+    <!-- ===== 商务合作视图 ===== -->
+    <div id="viewDeals" style="display:none">
+      <div class="page-head">
+        <div class="page-title">🤝 商务合作</div>
+        <div class="page-desc">商单/课程/咨询一条管道管到底：接洽 → 报价 → 执行 → 交付 → 结款，◀ ▶ 一键推进</div>
+      </div>
+      <div class="metric-grid" id="dealMetrics"></div>
+      <div class="toolbar">
+        <input type="text" id="dealSearch" placeholder="🔍 搜索品牌方...">
+        <button class="btn btn-primary" id="btnDealNew">＋ 新建合作</button>
+      </div>
+      <div class="kanban" id="dealKanban" style="grid-template-columns:repeat(5,1fr)"></div>
+      <!-- 合作弹窗 -->
+      <div class="mask" id="dealMask">
+        <div class="modal">
+          <h3>🤝 合作单</h3>
+          <input type="hidden" id="dId">
+          <div class="form-row"><label>品牌方 / 客户 *</label><input type="text" id="dBrand" placeholder="比如：某某AI工具官方"></div>
+          <div class="form-row"><label>类型</label><select id="dType"><option>商单</option><option>课程</option><option>咨询</option><option>其他</option></select></div>
+          <div class="form-row"><label>金额（元，填数字）</label><input type="text" id="dAmount" placeholder="比如：8000"></div>
+          <div class="form-row"><label>阶段</label><select id="dStage"><option>接洽中</option><option>报价中</option><option>执行中</option><option>已交付</option><option>已结款</option></select></div>
+          <div class="form-row"><label>联系方式 / 对接人</label><input type="text" id="dContact"></div>
+          <div class="form-row"><label>备注（需求、账期、注意事项）</label><textarea id="dNote"></textarea></div>
+          <div class="modal-btns">
+            <button class="btn danger-text" id="btnDealDel">删除</button>
+            <button class="btn" id="btnDealCancel">关闭</button>
+            <button class="btn btn-primary" id="btnDealSave">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 提示词库视图 ===== -->
+    <div id="viewPrompts" style="display:none">
+      <div class="page-head">
+        <div class="page-title">🧪 提示词库</div>
+        <div class="page-desc">测过有效的提示词才入库：标工具、标分类、标实测效果，用的时候一键复制</div>
+      </div>
+      <div class="toolbar">
+        <input type="text" id="promptSearch" placeholder="🔍 搜索提示词...">
+        <button class="btn" id="btnPromptAi">⧉ 提示词生成指令</button>
+        <button class="btn" id="btnPromptImport">📥 导入JSON</button>
+        <button class="btn btn-primary" id="btnPromptNew">＋ 新建提示词</button>
+      </div>
+      <div class="filter-row"><span class="flabel">工具</span><span id="promptToolBand"></span></div>
+      <div class="filter-row"><span class="flabel">分类</span><span id="promptCatBand"></span></div>
+      <div class="grid-cards" id="promptList"></div>
+      <div class="sec-title">🧰 工具档案速查表（直接用鼠标改，自动保存）</div>
+      <table class="tbl">
+        <thead><tr><th style="width:110px">工具</th><th>擅长什么</th><th style="width:180px">价格档</th><th>使用手感/注意事项</th><th style="width:50px"></th></tr></thead>
+        <tbody id="toolTbody"></tbody>
+      </table>
+      <button class="btn" id="btnToolAdd" style="margin-top:10px">＋ 加一行</button>
+      <!-- 提示词弹窗 -->
+      <div class="mask" id="prMask">
+        <div class="modal" style="width:640px">
+          <h3>🧪 提示词</h3>
+          <input type="hidden" id="prId">
+          <div class="form-row"><label>标题（这条提示词干什么用）*</label><input type="text" id="prTitle" placeholder="比如：电影感缓慢推镜（人物特写）"></div>
+          <div class="form-row"><label>提示词正文 *</label><textarea id="prText" style="min-height:120px" placeholder="粘贴完整提示词，建议保留英文原文"></textarea></div>
+          <div class="form-row"><label>适配工具 / 分类</label>
+            <div class="score-grid" style="grid-template-columns:1fr 1fr">
+              <div><label>工具</label><select id="prTool"><option>可灵</option><option>即梦</option><option>Runway</option><option>Veo</option><option>Sora</option><option>Pika</option><option>剪映AI</option><option>通用</option></select></div>
+              <div><label>分类</label><select id="prCat"><option>运镜</option><option>构图</option><option>配色</option><option>布光</option><option>质感</option><option>其他</option></select></div>
+            </div>
+          </div>
+          <div class="form-row"><label>实测效果（一句话，什么时候好用/什么时候翻车）</label><input type="text" id="prEffect" placeholder="比如：人物特写稳定，大全景容易崩"></div>
+          <div class="form-row"><label>评分（1~5，实测推荐度）</label><select id="prRate"><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select></div>
+          <div class="modal-btns">
+            <button class="btn danger-text" id="btnPrDel">删除</button>
+            <button class="btn" id="btnPrCancel">关闭</button>
+            <button class="btn btn-primary" id="btnPrSave">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 导演参考库视图 ===== -->
+    <div id="viewRef" style="display:none">
+      <div class="page-head">
+        <div class="page-title">🎞 导演参考库</div>
+        <div class="page-desc">拉片清单：每部片子只拆一个维度（构图/运镜/配色/布光/情绪），用到时按维度检索</div>
+      </div>
+      <div class="toolbar">
+        <input type="text" id="refSearch" placeholder="🔍 搜索片名/拆解点...">
+        <button class="btn" id="btnRefAi">⧉ 拉片拆解指令</button>
+        <button class="btn" id="btnRefImport">📥 导入JSON</button>
+        <button class="btn btn-primary" id="btnRefNew">＋ 新建参考</button>
+      </div>
+      <div class="filter-row"><span class="flabel">维度</span><span id="refDimBand"></span></div>
+      <div class="grid-cards" id="refList"></div>
+      <!-- 参考弹窗 -->
+      <div class="mask" id="rfMask">
+        <div class="modal" style="width:640px">
+          <h3>🎞 导演参考</h3>
+          <input type="hidden" id="rfId">
+          <div class="form-row"><label>片名 *</label><input type="text" id="rfTitle" placeholder="比如：银翼杀手2049"></div>
+          <div class="form-row"><label>类型</label><select id="rfType"><option>电影</option><option>短片</option><option>广告</option><option>MV</option><option>其他</option></select></div>
+          <div class="form-row"><label>拆解维度（可多选）</label><div class="tag-picker" id="rfDims"></div></div>
+          <div class="form-row"><label>拆什么（这部片子具体学什么，越具体越好）*</label><textarea id="rfPoint" placeholder="比如：橙青撞色的夜景布光——暖色钨丝灯做前景，冷蓝做远景，人物始终卡在冷暖交界"></textarea></div>
+          <div class="form-row"><label>参考链接</label><input type="text" id="rfLink" placeholder="B站/豆瓣/截图存放路径..."></div>
+          <div class="form-row"><label>笔记</label><textarea id="rfNote"></textarea></div>
+          <div class="form-row"><label>推荐度（1~5）</label><select id="rfRate"><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select></div>
+          <div class="modal-btns">
+            <button class="btn danger-text" id="btnRfDel">删除</button>
+            <button class="btn" id="btnRfCancel">关闭</button>
+            <button class="btn btn-primary" id="btnRfSave">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 爆款拆解库视图 ===== -->
+    <div id="viewHot" style="display:none">
+      <div class="page-head">
+        <div class="page-title">🔥 爆款拆解库</div>
+        <div class="page-desc">刷到爆款别只收藏：拆出钩子、结构、爆点，一键转进选题库变成自己的选题</div>
+      </div>
+      <div class="toolbar">
+        <input type="text" id="hotSearch" placeholder="🔍 搜索标题/作者...">
+        <button class="btn" id="btnHotAi">⧉ 爆款拆解指令</button>
+        <button class="btn" id="btnHotImport">📥 导入JSON</button>
+        <button class="btn btn-primary" id="btnHotNew">＋ 录入爆款</button>
+      </div>
+      <div class="filter-row"><span class="flabel">状态</span><span id="hotStBand"></span></div>
+      <div class="filter-row"><span class="flabel">平台</span><span id="hotPlatBand"></span></div>
+      <div class="grid-cards" id="hotList"></div>
+      <!-- 爆款弹窗 -->
+      <div class="mask" id="htMask">
+        <div class="modal" style="width:640px">
+          <h3>🔥 爆款拆解</h3>
+          <input type="hidden" id="htId">
+          <div class="form-row"><label>标题 *</label><input type="text" id="htTitle"></div>
+          <div class="form-row"><label>平台 / 作者 / 数据档</label>
+            <div class="score-grid" style="grid-template-columns:1fr 1fr 1fr">
+              <div><label>平台</label><select id="htPlat"><option>抖音</option><option>小红书</option><option>B站</option><option>视频号</option><option>YouTube</option><option>其他</option></select></div>
+              <div><label>作者</label><input type="text" id="htAuthor"></div>
+              <div><label>数据档（如 320w播放）</label><input type="text" id="htPlays" placeholder="320w"></div>
+            </div>
+          </div>
+          <div class="form-row"><label>链接</label><input type="text" id="htLink" placeholder="https://..."></div>
+          <div class="form-row"><label>钩子（开头 3 秒怎么抓人的）</label><input type="text" id="htHook" placeholder="比如：直接抛反常识结论"></div>
+          <div class="form-row"><label>结构（整条片子的段落怎么排的）</label><textarea id="htStructure" placeholder="比如：钩子→3个案例→反转→行动号召"></textarea></div>
+          <div class="form-row"><label>爆点（它为什么爆）</label><textarea id="htWhy"></textarea></div>
+          <div class="form-row"><label>可复用点（我怎么用到自己的选题上）</label><textarea id="htReuse"></textarea></div>
+          <div class="form-row"><label>状态</label><select id="htSt"><option>待拆解</option><option>已拆解</option></select></div>
+          <div class="modal-btns">
+            <button class="btn danger-text" id="btnHtDel">删除</button>
+            <button class="btn" id="btnHtCancel">关闭</button>
+            <button class="btn btn-primary" id="btnHtSave">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 占位视图 ===== -->
+    <div class="placeholder" id="viewPlaceholder">
+      <div class="big">🚧</div>
+      <h2 id="phTitle">模块规划中</h2>
+      <p>这个模块还没开工。我们先一起把「选题库」打磨好用，<br>再按流水线顺序逐个搭建。</p>
+    </div>
+  </main>
+
+  <!-- ===== 新建/编辑弹窗 ===== -->
+  <div class="mask" id="editMask">
+    <div class="modal">
+      <h3 id="modalTitle">新建选题</h3>
+      <input type="hidden" id="fId">
+      <div class="form-row"><label>选题标题 *</label><input type="text" id="fTitle" placeholder="比如：3个运镜提示词，让AI视频秒变电影感"></div>
+      <div class="form-row"><label>切入角度（一句话说清这条视频怎么讲）</label><input type="text" id="fAngle" placeholder="比如：新手最容易出效果的3个运镜，附提示词模板"></div>
+      <div class="form-row"><label>状态</label>
+        <select id="fStatus"><option>待定</option><option>已排产</option><option>已发布</option><option>搁置</option></select>
+      </div>
+      <div class="form-row"><label>所属合集（一个合集 = 抖音上的一个系列）</label>
+        <select id="fSeries"></select>
+      </div>
+      <div class="form-row"><label>备注</label><textarea id="fNote" placeholder="参考链接、想法补充..."></textarea></div>
+      <div class="modal-btns">
+        <button class="btn" id="btnCancel">取消</button>
+        <button class="btn btn-primary" id="btnSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 导演雷达列表弹窗 ===== -->
+  <div class="mask" id="radarMask">
+    <div class="modal rmodal">
+      <div class="rmodal-head">
+        <span class="rmodal-title" id="radarMTitle"></span>
+        <span class="rmodal-meta" id="radarMMeta"></span>
+        <button class="rmodal-close" id="radarMClose">✕</button>
+      </div>
+      <div class="rmodal-list" id="radarMList"></div>
+    </div>
+  </div>
+
+  <!-- ===== AI指令弹窗 ===== -->
+  <div class="mask" id="promptMask">
+    <div class="modal">
+      <h3 id="promptTitle">⧉ AI 选题指令</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px">把下面这段发给 AI（比如直接发给我），让它干活；把返回的 JSON 保存后用「导入」入库。</p>
+      <div class="form-row"><textarea id="promptText" style="min-height:300px;font-size:12px"></textarea></div>
+      <div class="modal-btns">
+        <button class="btn" id="btnPromptClose">关闭</button>
+        <button class="btn btn-primary" id="btnPromptCopy">复制</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 灵感全屏编辑弹窗 ===== -->
+  <div class="mask" id="ideaExpandMask">
+    <div class="modal idea-expand-card">
+      <div class="idea-expand-head">
+        <span>💡 灵感速记 · 全屏编辑</span>
+        <span style="font-size:12px;color:var(--muted);font-weight:400">ESC / 点击遮罩 / 收起，内容自动带回输入框</span>
+      </div>
+      <textarea id="ideaExpandTa" placeholder="💡 想到什么就说什么..."></textarea>
+      <div class="idea-expand-foot">
+        <button class="btn" id="btnExpandClose">收起</button>
+        <button class="btn btn-primary" id="btnExpandAdd">＋ 记录</button>
+      </div>
+    </div>
+  </div>
+
+<script src="radar-data.js"></script>
+<script>
+/* ================= 数据层 ================= */
+const LS_KEY = 'ai-director-workbench.topics.v1';
+const STATUSES = ['待定','已排产','已发布','搁置'];
+const PRESET_TAGS = ['电影质感','运镜','构图','配色','布光','提示词技巧','AI工具','剪辑','账号运营'];
+
+/* --- 合集（系列）：一个合集 = 抖音上的一个合集，选题 = 合集里的一集 --- */
+const SERIES_KEY = 'ai-director-workbench.series.v1';
+const seedSeries = [
+  {id:1,name:'构图翻译成AI听得懂的话',desc:'把摄影构图术语逐集翻译成 AI 提示词',status:'更新中',createdAt:'2026-07-20'},
+  {id:2,name:'AI运镜·电影感公式',desc:'每期一个运镜技巧，给可直接抄的提示词',status:'更新中',createdAt:'2026-07-21'}
+];
+function loadSeries(){ try{ const raw=localStorage.getItem(SERIES_KEY); if(raw) return JSON.parse(raw); }catch(e){} return null; }
+let seriesList = loadSeries() || seedSeries.slice();
+function saveSeries(){ localStorage.setItem(SERIES_KEY, JSON.stringify(seriesList)); }
+function nextSeriesId(){ return seriesList.reduce((m,s)=>Math.max(m,s.id),0)+1; }
+function seriesOf(id){ return seriesList.find(s=>s.id===id) || null; }
+function nextEp(sid){ return topics.reduce((m,t)=>t.seriesId===sid ? Math.max(m,t.ep||0) : m, 0)+1; }
+
+const seedData = [
+  {id:1,title:'3个运镜提示词，让AI视频秒变电影感',angle:'新手最容易出效果的推/拉/环绕运镜，附现成提示词模板',source:'🔥 爆款拆解',tags:['运镜','提示词技巧'],pain:5,audience:5,appeal:4,difficulty:2,status:'已排产',note:'',seriesId:2,ep:1,createdAt:'2026-07-20'},
+  {id:2,title:'可灵 vs 即梦：人像特写运镜实测对比',angle:'同一段提示词喂给两个工具，直出画质和运镜稳定性实测',source:'🤖 AI生成',tags:['AI工具','运镜'],pain:4,audience:4,appeal:5,difficulty:3,status:'待定',note:'需要两边都充会员',seriesId:2,ep:2,createdAt:'2026-07-21'},
+  {id:3,title:'电影感配色公式：橙青色调怎么写给AI',angle:'把调色师术语翻译成AI听得懂的提示词，给可直接抄的公式',source:'💡 灵感',tags:['配色','提示词技巧'],pain:4,audience:4,appeal:4,difficulty:2,status:'待定',note:'',seriesId:null,ep:null,createdAt:'2026-07-22'},
+  {id:4,title:'为什么你的AI视频没有"叙事感"？',angle:'不是工具问题，是镜头语言问题：用构图和景别讲故事',source:'✍️ 手动',tags:['构图','电影质感'],pain:5,audience:3,appeal:4,difficulty:4,status:'待评估',note:'需要准备3个对比案例',seriesId:1,ep:1,createdAt:'2026-07-23'},
+  {id:5,title:'一条口播视频的诞生：从选题到剪映全流程',angle:'把自己的完整工作流拍成内容，顺便展示工作台',source:'💡 灵感',tags:['剪辑','账号运营'],pain:3,audience:4,appeal:3,difficulty:3,status:'已发布',note:'',seriesId:null,ep:null,createdAt:'2026-07-15'}
+];
+
+function load(){
+  try{ const raw = localStorage.getItem(LS_KEY); if(raw) return JSON.parse(raw); }catch(e){}
+  return null;
+}
+let topics = load() || seedData.slice();
+topics.forEach(t=>{ if(t.status==='待评估') t.status='待定'; if(t.seriesId===undefined) t.seriesId=null; if(t.ep===undefined) t.ep=null; }); // 旧数据迁移：待评估并入待定；补合集字段
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(topics)); }
+save();
+saveSeries();
+
+let filters = { status:'全部', q:'' };
+
+/* ================= 工具 ================= */
+function esc(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function today(){ return new Date().toISOString().slice(0,10); }
+function nextId(){ return topics.reduce((m,t)=>Math.max(m,t.id),0)+1; }
+
+/* ================= 渲染 ================= */
+function filteredTopics(){
+  let list = topics.filter(t =>
+    (filters.status==='全部' || t.status===filters.status) &&
+    (!filters.q || (t.title+t.angle+(t.tags||[]).join('')).toLowerCase().includes(filters.q.toLowerCase()))
+  );
+  list.sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+  return list;
+}
+
+function renderBand(){
+  const band = document.getElementById('statusBand');
+  let html = `<span class="sp ${filters.status==='全部'?'on':''}" data-st="全部">全部 ${topics.length}</span>`;
+  STATUSES.forEach(st=>{
+    const n = topics.filter(t=>t.status===st).length;
+    html += `<span class="sp ${filters.status===st?'on':''}" data-st="${st}">${st} ${n}</span>`;
+  });
+  band.innerHTML = html;
+  band.querySelectorAll('.sp').forEach(el=>el.onclick=()=>{ filters.status = el.dataset.st==='全部'?'全部':el.dataset.st; renderAll(); });
+}
+
+function topicCardHtml(t){
+  return `<div class="card">
+      <div class="card-top">
+        ${t.ep?`<span class="ep-badge">EP${String(t.ep).padStart(2,'0')}</span>`:''}
+        <div class="card-title">${esc(t.title)}</div>
+      </div>
+      ${t.angle?`<div class="card-angle">${esc(t.angle)}</div>`:''}
+      <div class="meta-row">
+        <span class="status st-${t.status}">${t.status}</span>
+        <span class="src">${esc(t.source)}</span>
+        ${(t.tags||[]).map(tg=>`<span class="chip">${esc(tg)}</span>`).join('')}
+      </div>
+      <div class="card-foot">
+        <span class="date">${t.createdAt}</span>
+        <button class="mini-btn" data-act="next" data-id="${t.id}">▶ 推进</button>
+        <button class="mini-btn" data-act="edit" data-id="${t.id}">编辑</button>
+        <button class="mini-btn danger" data-act="del" data-id="${t.id}">删除</button>
+      </div>
+    </div>`;
+}
+
+function bindCardActs(box){
+  box.querySelectorAll('[data-act]').forEach(el=>{
+    el.onclick = e=>{
+      e.stopPropagation();
+      const id = +el.dataset.id, act = el.dataset.act;
+      if(act==='del'){ if(confirm('确定删除这条选题？')){ topics = topics.filter(t=>t.id!==id); save(); renderAll(); } }
+      if(act==='edit'){ openModal(topics.find(t=>t.id===id)); }
+      if(act==='next'){
+        const t = topics.find(t=>t.id===id);
+        const i = STATUSES.indexOf(t.status);
+        t.status = STATUSES[(i+1) % STATUSES.length];
+        save(); renderAll();
+      }
+    };
+  });
+}
+
+const collapsedSeries = new Set(); // 记住用户手动折叠/展开的合集（会话内有效）
+function renderCards(){
+  const list = filteredTopics();
+  const box = document.getElementById('cards');
+  document.getElementById('totalInfo').textContent = `共 ${list.length} 条选题`;
+  document.getElementById('navCount').textContent = topics.length;
+  if(!list.length){ box.innerHTML = '<div class="empty">没有符合条件的选题，点右上角「+ 新建选题」来一条？</div>'; return; }
+  const bySeries = sid => list.filter(t=>(t.seriesId||null)===sid)
+    .sort((a,b)=>(a.ep||999)-(b.ep||999) || b.createdAt.localeCompare(a.createdAt));
+  const singles = bySeries(null);
+  const ordered = seriesList.slice().sort((a,b)=>(a.status==='已完结')-(b.status==='已完结'));
+  const filtering = filters.status!=='全部' || filters.q;
+  let html = '';
+  ordered.forEach(s=>{
+    const items = bySeries(s.id);
+    if(!items.length && filtering) return; // 筛选/搜索时，没有命中的合集不占位
+    const all = topics.filter(t=>t.seriesId===s.id);
+    const stats = ['共'+all.length+'集'].concat(STATUSES.filter(st=>all.some(t=>t.status===st)).map(st=>st+' '+all.filter(t=>t.status===st).length)).join(' · ');
+    const collapsed = collapsedSeries.has(s.id) || (s.status==='已完结' && !collapsedSeries.has('open:'+s.id));
+    html += `<div class="series-block ${collapsed?'collapsed':''}" data-sid="${s.id}">
+      <div class="series-head ${s.status==='已完结'?'done':''}">
+        <span>📚</span>
+        <span class="series-name">${esc(s.name)}</span>
+        <span class="series-st">${s.status}</span>
+        <span class="series-stats">${stats}</span>
+        <span class="series-ops">
+          <button class="mini-btn" data-sact="addEp" title="在这个合集里新建一集">＋加一集</button>
+          <button class="mini-btn" data-sact="rename" title="合集改名">✏️</button>
+          <button class="mini-btn" data-sact="toggleDone" title="${s.status==='已完结'?'重新开启':'标记完结'}">${s.status==='已完结'?'↩︎':'✔️'}</button>
+          <button class="mini-btn danger" data-sact="delSeries" title="删除合集（选题归入单篇）">🗑</button>
+        </span>
+        <span class="series-arrow">▾</span>
+      </div>
+      <div class="cards series-body">${items.map(topicCardHtml).join('') || '<div class="empty">合集里还没有选题，点「＋加一集」来一条？</div>'}</div>
+    </div>`;
+  });
+  if(singles.length || !ordered.length){
+    html += `<div class="series-block">
+      <div class="series-head"><span>📦</span><span class="series-name">单篇选题</span><span class="series-stats">没归进任何合集的选题，编辑时可选择归入合集</span></div>
+      <div class="cards series-body">${singles.map(topicCardHtml).join('') || '<div class="empty">暂无单篇选题</div>'}</div>
+    </div>`;
+  }
+  box.innerHTML = html;
+  bindCardActs(box);
+  box.querySelectorAll('.series-head').forEach(head=>{
+    head.onclick = ()=>{
+      const blk = head.parentElement, sid = blk.dataset.sid;
+      if(!sid) return;
+      const id = +sid;
+      const isCollapsed = blk.classList.toggle('collapsed');
+      if(isCollapsed){ collapsedSeries.add(id); collapsedSeries.delete('open:'+id); }
+      else { collapsedSeries.delete(id); collapsedSeries.add('open:'+id); }
+    };
+  });
+  box.querySelectorAll('[data-sact]').forEach(el=>{
+    el.onclick = e=>{
+      e.stopPropagation();
+      const s = seriesOf(+el.closest('.series-block').dataset.sid); if(!s) return;
+      const act = el.dataset.sact;
+      if(act==='addEp'){ openModal(null, s.id); }
+      if(act==='rename'){
+        const name = prompt('合集改名（建议和抖音上的合集名保持一致）：', s.name);
+        if(name && name.trim()){ s.name = name.trim(); saveSeries(); renderAll(); }
+      }
+      if(act==='toggleDone'){
+        s.status = s.status==='已完结' ? '更新中' : '已完结';
+        saveSeries(); renderAll();
+      }
+      if(act==='delSeries'){
+        if(confirm(`删除合集「${s.name}」？里面的选题会归入「单篇选题」，不会被删除。`)){
+          topics.forEach(t=>{ if(t.seriesId===s.id){ t.seriesId=null; t.ep=null; } });
+          seriesList = seriesList.filter(x=>x.id!==s.id);
+          save(); saveSeries(); renderAll();
+        }
+      }
+    };
+  });
+}
+
+function renderAll(){ renderBand(); renderCards(); }
+
+/* ================= 弹窗 ================= */
+const editMask = document.getElementById('editMask');
+
+function fillSeriesOptions(selected){
+  const sel = document.getElementById('fSeries');
+  sel.innerHTML = '<option value="">📦 不归入合集（单篇）</option>' +
+    seriesList.map(s=>`<option value="${s.id}">📚 ${esc(s.name)}</option>`).join('') +
+    '<option value="__new">＋ 新建合集…</option>';
+  sel.value = selected ? String(selected) : '';
+}
+
+function openModal(t, presetSid){
+  document.getElementById('modalTitle').textContent = t ? '编辑选题' : (presetSid ? `新建选题 · 加一集到「${seriesOf(presetSid).name}」` : '新建选题');
+  document.getElementById('fId').value = t ? t.id : '';
+  document.getElementById('fTitle').value = t ? t.title : '';
+  document.getElementById('fAngle').value = t ? t.angle : '';
+  document.getElementById('fStatus').value = t ? t.status : '待定';
+  fillSeriesOptions(t ? t.seriesId : (presetSid||null));
+  document.getElementById('fNote').value = t ? (t.note||'') : '';
+  editMask.classList.add('show');
+}
+
+document.getElementById('fSeries').onchange = e=>{
+  if(e.target.value!=='__new') return;
+  const name = prompt('新合集的名字（建议和抖音上的合集名保持一致）：');
+  if(name && name.trim()){
+    const s = {id:nextSeriesId(), name:name.trim(), desc:'', status:'更新中', createdAt:today()};
+    seriesList.push(s); saveSeries();
+    fillSeriesOptions(s.id);
+  } else {
+    fillSeriesOptions(null);
+  }
+};
+
+document.getElementById('btnNew').onclick = ()=>openModal(null);
+document.getElementById('btnCancel').onclick = ()=>editMask.classList.remove('show');
+editMask.onclick = e=>{ if(e.target===editMask) editMask.classList.remove('show'); };
+
+document.getElementById('btnSave').onclick = ()=>{
+  const title = document.getElementById('fTitle').value.trim();
+  if(!title){ alert('标题必填'); return; }
+  const id = document.getElementById('fId').value;
+  const sidRaw = document.getElementById('fSeries').value;
+  const seriesId = sidRaw && sidRaw!=='__new' ? +sidRaw : null;
+  const data = {
+    title,
+    angle: document.getElementById('fAngle').value.trim(),
+    status: document.getElementById('fStatus').value,
+    note: document.getElementById('fNote').value.trim(),
+    seriesId
+  };
+  if(id){
+    const t = topics.find(t=>t.id===+id);
+    const changed = (t.seriesId||null) !== seriesId;
+    Object.assign(t, data);
+    if(seriesId && (changed || !t.ep)) t.ep = nextEp(seriesId); // 换合集或还没集数：自动排到合集末尾
+    if(!seriesId) t.ep = null;
+  } else {
+    topics.unshift(Object.assign({id:nextId(), createdAt:today(), source:'✍️ 手动', tags:[], ep: seriesId?nextEp(seriesId):null}, data));
+  }
+  save(); editMask.classList.remove('show'); renderAll();
+};
+
+/* ================= 搜索 ================= */
+document.getElementById('searchInput').oninput = e=>{ filters.q = e.target.value.trim(); renderCards(); };
+
+/* ================= AI 指令弹窗（通用，供各模块复用） ================= */
+function openPrompt(title, text){
+  document.getElementById('promptTitle').textContent = title;
+  document.getElementById('promptText').value = text;
+  document.getElementById('promptMask').classList.add('show');
+}
+
+document.getElementById('btnPromptClose').onclick = ()=>document.getElementById('promptMask').classList.remove('show');
+document.getElementById('promptMask').onclick = e=>{ if(e.target.id==='promptMask') e.target.classList.remove('show'); };
+document.getElementById('btnPromptCopy').onclick = ()=>{
+  const ta = document.getElementById('promptText');
+  ta.select();
+  try{ document.execCommand('copy'); }catch(e){}
+  if(navigator.clipboard) navigator.clipboard.writeText(ta.value).catch(()=>{});
+  alert('已复制，去发给 AI 吧');
+};
+
+/* ================= 灵感速记 ================= */
+const IDEA_KEY = 'ai-director-workbench.ideas.v1';
+const seedIdeas = [
+  {id:1,text:'拍一条"AI视频常见翻车瞬间合集"，用翻车案例讲提示词避坑，比正面教学更有记忆点',tags:['提示词技巧'],createdAt:'2026-07-22 21:40',converted:false},
+  {id:2,text:'把"推轨变焦"做成左右对比系列：左边普通直出，右边电影感，视觉冲击直接拉满',tags:['运镜','电影质感'],createdAt:'2026-07-23 08:15',converted:false},
+  {id:3,text:'有学员问"为什么我的AI视频像PPT"——可以出一条讲镜头时长和节奏的',tags:['剪辑'],createdAt:'2026-07-23 12:02',converted:false}
+];
+function loadIdeas(){ try{ const raw=localStorage.getItem(IDEA_KEY); if(raw) return JSON.parse(raw); }catch(e){} return null; }
+let ideas = loadIdeas() || seedIdeas.slice();
+function saveIdeas(){ localStorage.setItem(IDEA_KEY, JSON.stringify(ideas)); }
+function nextIdeaId(){ return ideas.reduce((m,t)=>Math.max(m,t.id),0)+1; }
+function nowStr(){ const d=new Date(), p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; }
+let ideaQuery = '';
+
+function renderIdeas(){
+  const list = ideaQuery ? ideas.filter(i=>i.text.toLowerCase().includes(ideaQuery.toLowerCase())) : ideas;
+  const undone = ideas.filter(i=>!i.converted).length;
+  document.getElementById('navIdeaCount').textContent = undone;
+  document.getElementById('ideaStats').textContent = ideaQuery ? `搜到 ${list.length} / ${ideas.length} 条` : `共 ${ideas.length} 条`;
+  const box = document.getElementById('ideaList');
+  if(!list.length){ box.innerHTML = `<div class="empty">${ideaQuery?'没有匹配的灵感':'这里还空着，记下第一条灵感吧'}</div>`; return; }
+  box.innerHTML = list.map(it=>`
+    <div class="idea-card">
+      <div class="idea-text">${esc(it.text)}</div>
+      ${it.converted?'<div class="meta-row"><span class="status st-已发布">已转选题</span></div>':''}
+      <div class="card-foot">
+        <span class="date">${esc(it.createdAt.slice(5))}</span>
+        ${it.converted?'':`<button class="mini-btn" data-act="conv" data-id="${it.id}">🎯 转选题</button>`}
+        <button class="mini-btn danger" data-act="del" data-id="${it.id}">删除</button>
+      </div>
+    </div>`).join('');
+  box.querySelectorAll('[data-act]').forEach(el=>el.onclick=()=>{
+    const id = +el.dataset.id;
+    if(el.dataset.act==='del'){ if(confirm('删除这条灵感？')){ ideas = ideas.filter(i=>i.id!==id); saveIdeas(); renderIdeas(); } }
+    if(el.dataset.act==='conv'){ ideaToTopic(id); }
+  });
+}
+document.getElementById('ideaSearch').addEventListener('input', e=>{ ideaQuery = e.target.value.trim(); renderIdeas(); });
+
+function addIdea(){
+  const ta = document.getElementById('ideaInput');
+  const v = ta.value.trim();
+  if(!v){ alert('先写点什么'); return; }
+  const idea = {id:nextIdeaId(), text:v, tags:[], createdAt:nowStr(), converted:false};
+  ideas.unshift(idea);
+  ta.value = '';
+  saveIdeas(); renderIdeas();
+  obsWriteIdea(idea);
+}
+document.getElementById('btnIdeaAdd').onclick = addIdea;
+document.getElementById('ideaInput').addEventListener('keydown', e=>{ if(e.ctrlKey && e.key==='Enter') addIdea(); });
+
+/* ---- 灵感全屏编辑（专注模式） ---- */
+const ideaExpandMask = document.getElementById('ideaExpandMask');
+const ideaExpandTa = document.getElementById('ideaExpandTa');
+function openIdeaExpand(){ ideaExpandTa.value = document.getElementById('ideaInput').value; ideaExpandMask.classList.add('show'); ideaExpandTa.focus(); }
+function closeIdeaExpand(){ document.getElementById('ideaInput').value = ideaExpandTa.value; ideaExpandMask.classList.remove('show'); }
+document.getElementById('btnIdeaExpand').onclick = openIdeaExpand;
+document.getElementById('btnExpandClose').onclick = closeIdeaExpand;
+document.getElementById('btnExpandAdd').onclick = ()=>{ closeIdeaExpand(); addIdea(); };
+ideaExpandMask.addEventListener('click', e=>{ if(e.target===ideaExpandMask) closeIdeaExpand(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && ideaExpandMask.classList.contains('show')) closeIdeaExpand(); });
+ideaExpandTa.addEventListener('keydown', e=>{ if(e.ctrlKey && e.key==='Enter'){ closeIdeaExpand(); addIdea(); } });
+
+function ideaToTopic(id){
+  const it = ideas.find(x=>x.id===id);
+  if(!it) return;
+  const title = it.text.split(/[\n。！？!?.]/)[0].slice(0,40) || it.text.slice(0,40);
+  topics.unshift({id:nextId(), title, angle:it.text, source:'💡 灵感', tags:it.tags.filter(t=>PRESET_TAGS.includes(t)),
+    pain:3, audience:3, appeal:3, difficulty:3, status:'待定', note:'来自灵感速记 ' + it.createdAt, createdAt:today()});
+  it.converted = true;
+  save(); saveIdeas(); renderAll(); renderIdeas();
+  obsWriteIdea(it);
+  alert('已转入选题库（待定），去选题库看看吧');
+}
+
+/* ================= Obsidian 库同步（灵感速记 → .md） ================= */
+const obsSupported = 'showDirectoryPicker' in window;
+let obsDir = null;
+function idbOpen(){ return new Promise((res,rej)=>{ const r=indexedDB.open('ai-director-workbench-idb',1); r.onupgradeneeded=()=>r.result.createObjectStore('handles'); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function idbSet(v, key){ const db=await idbOpen(); return new Promise((res,rej)=>{ const tx=db.transaction('handles','readwrite'); tx.objectStore('handles').put(v, key||'obsidianDir'); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); }); }
+async function idbGet(key){ const db=await idbOpen(); return new Promise((res,rej)=>{ const rq=db.transaction('handles').objectStore('handles').get(key||'obsidianDir'); rq.onsuccess=()=>res(rq.result); rq.onerror=()=>rej(rq.error); }); }
+async function obsPerm(request){
+  if(!obsDir) return false;
+  const o={mode:'readwrite'};
+  if(await obsDir.queryPermission(o)==='granted') return true;
+  if(request && await obsDir.requestPermission(o)==='granted') return true;
+  return false;
+}
+async function obsConnect(){
+  if(!obsSupported) return;
+  try{
+    // 无论是否已连接，点击都重新弹出选择框（支持“换文件夹”）
+    obsDir = await window.showDirectoryPicker({id:'obsidian-ideas-dir'});
+    if(await obsPerm(true)){
+      await idbSet(obsDir);
+      obsFlash('已连接 ✅');
+    }
+  }catch(e){ /* 用户取消选择 */ }
+  updateObsidianUI();
+}
+let obsFlashTimer = null;
+function obsFlash(msg){
+  const st=document.getElementById('obsidianStatus');
+  if(st) st.textContent='☁️ Obsidian：'+msg;
+  clearTimeout(obsFlashTimer);
+  obsFlashTimer=setTimeout(updateObsidianUI, 3500);
+}
+function updateObsidianUI(){
+  const st=document.getElementById('obsidianStatus');
+  const btn=document.getElementById('btnObsidianConnect');
+  const syncBtn=document.getElementById('btnObsidianSyncAll');
+  if(!st) return;
+  if(!obsSupported){
+    st.textContent='☁️ Obsidian：当前浏览器不支持直写，请用 Chrome / Edge 打开工作台';
+    btn.style.display='none'; syncBtn.style.display='none'; return;
+  }
+  btn.style.display='';
+  if(obsDir){
+    st.textContent='☁️ Obsidian：已连接 ✅ 新灵感自动存为 .md（随坚果云上云）';
+    btn.textContent='🔁 换文件夹';
+    document.getElementById('btnObsidianRead').style.display='';
+    const pending = ideas.filter(i=>!i.file).length;
+    syncBtn.style.display = pending ? '' : 'none';
+    syncBtn.textContent = `⬆ 同步 ${pending} 条历史灵感`;
+  } else {
+    st.textContent='☁️ Obsidian：未连接（灵感只存在浏览器本地）';
+    btn.textContent='🔗 连接 Obsidian 库';
+    document.getElementById('btnObsidianRead').style.display='none';
+    syncBtn.style.display='none';
+  }
+}
+async function obsInit(){
+  if(obsSupported){
+    try{ const h=await idbGet(); if(h) obsDir=h; }catch(e){}
+  }
+  updateObsidianUI();
+}
+function obsFileName(idea){
+  const dt = (idea.createdAt||'').replace(' ','_').replace(/:/g,'');
+  const txt = idea.text.replace(/[\r\n]+/g,' ').replace(/[\\/:*?"<>|#^\[\]]/g,'').trim().slice(0,14) || '灵感';
+  return `${dt}-${idea.id}-${txt}.md`;
+}
+function obsMarkdown(idea){
+  return `---\ntags: [${idea.tags.join(', ')}]\ncreated: ${idea.createdAt}\nconverted: ${!!idea.converted}\n---\n\n${idea.text}\n`;
+}
+async function obsWriteIdea(idea){
+  if(!obsDir || !await obsPerm(false)) return;
+  try{
+    const name = idea.file || obsFileName(idea);
+    const fh = await obsDir.getFileHandle(name, {create:true});
+    const w = await fh.createWritable();
+    await w.write(obsMarkdown(idea));
+    await w.close();
+    idea.file = name;
+    saveIdeas();
+    obsFlash('已存入 '+name+' ✅');
+  }catch(e){ console.warn('Obsidian 写入失败', e); obsFlash('写入失败（灵感仍保存在本地）'); }
+}
+document.getElementById('btnObsidianConnect').onclick = obsConnect;
+document.getElementById('btnObsidianSyncAll').onclick = async ()=>{
+  if(!obsDir || !await obsPerm(true)) return;
+  const pending = ideas.filter(i=>!i.file);
+  for(const it of pending) await obsWriteIdea(it);
+  updateObsidianUI();
+  if(pending.length) obsFlash(`历史灵感已同步 ${pending.length} 条 ✅`);
+};
+
+/* ================= 从 Obsidian 回读灵感（手机端闭环） ================= */
+function parseObsMarkdown(text, name){
+  let tags=[], created=nowStr(), converted=false, body=text;
+  const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+  if(m){
+    body = m[2];
+    const tm = m[1].match(/tags:\s*\[(.*?)\]/); if(tm) tags = tm[1].split(',').map(s=>s.trim()).filter(Boolean);
+    const cm = m[1].match(/created:\s*(.+)/); if(cm) created = cm[1].trim();
+    const vm = m[1].match(/converted:\s*(.+)/); if(vm) converted = vm[1].trim()==='true';
+  }
+  body = body.trim();
+  if(!body) return null;
+  return {id:nextIdeaId(), text:body, tags, createdAt:created, converted, file:name};
+}
+async function obsReadAll(){
+  if(!obsDir || !await obsPerm(true)) return;
+  let added = 0, empty = 0;
+  try{
+    for await (const [name, handle] of obsDir.entries()){
+      if(handle.kind!=='file' || !name.endsWith('.md')) continue;
+      if(name.startsWith('📌')) continue;
+      if(ideas.some(i=>i.file===name)) continue;
+      const f = await handle.getFile();
+      const idea = parseObsMarkdown(await f.text(), name);
+      if(idea){ ideas.push(idea); added++; } else { empty++; }
+    }
+  }catch(e){ console.warn('读取 Obsidian 失败', e); obsFlash('读取失败'); return; }
+  if(added){ ideas.sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||'')); saveIdeas(); renderIdeas(); }
+  const tip = empty ? `（${empty} 个空笔记已跳过）` : '';
+  obsFlash(added ? `从 Obsidian 读取了 ${added} 条新灵感 ✅` + tip : 'Obsidian 里没有新灵感' + tip);
+}
+document.getElementById('btnObsidianRead').onclick = obsReadAll;
+
+/* ================= 全量云备份（→ 坚果云） ================= */
+let bkDir = null;
+let bkLastJson = '';
+const BK_FOLDER = 'AI导演工作台备份';
+const BK_FILE = 'AI导演工作台-全量备份.json';
+function collectBackupData(){
+  const data = {};
+  for(let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    if(k.startsWith('ai-director-workbench.')){
+      try{ data[k] = JSON.parse(localStorage.getItem(k)); }catch(e){ data[k] = localStorage.getItem(k); }
+    }
+  }
+  return data;
+}
+async function bkPerm(request){
+  if(!bkDir) return false;
+  const o={mode:'readwrite'};
+  if(await bkDir.queryPermission(o)==='granted') return true;
+  if(request && await bkDir.requestPermission(o)==='granted') return true;
+  return false;
+}
+function updateBackupUI(msg){
+  const st = document.getElementById('backupStatus');
+  const connected = !!bkDir;
+  document.getElementById('btnBackupNow').style.display = connected?'':'none';
+  document.getElementById('btnBackupRestore').style.display = connected?'':'none';
+  document.getElementById('btnBackupConnect').textContent = connected ? '🔁 换文件夹' : '🔗 连接备份';
+  if(st) st.textContent = msg || (connected ? '☁️ 云备份：已连接 ✅（每5分钟自动备份）' : '☁️ 云备份：未连接');
+}
+async function cloudBackup(quiet){
+  if(!bkDir || !await bkPerm(false)) return false;
+  try{
+    const dir = await bkDir.getDirectoryHandle(BK_FOLDER, {create:true});
+    const fh = await dir.getFileHandle(BK_FILE, {create:true});
+    const w = await fh.createWritable();
+    await w.write(JSON.stringify({app:'ai-director-workbench', version:1, exportedAt:new Date().toISOString(), data:collectBackupData()}, null, 2));
+    await w.close();
+    if(!quiet) updateBackupUI('☁️ 云备份：已备份 ✅ ' + nowStr());
+    return true;
+  }catch(e){ console.warn('云备份失败', e); if(!quiet) updateBackupUI('☁️ 云备份：写入失败'); return false; }
+}
+async function bkConnect(){
+  if(!obsSupported){ updateBackupUI('☁️ 云备份：浏览器不支持，请用 Chrome/Edge'); return; }
+  try{
+    if(!bkDir) bkDir = await window.showDirectoryPicker({id:'backup-dir'});
+    if(await bkPerm(true)){
+      await idbSet(bkDir, 'backupDir');
+      await cloudBackup(true);
+      bkLastJson = JSON.stringify(collectBackupData());
+      updateBackupUI('☁️ 云备份：已连接 ✅ 首次备份完成 ' + nowStr());
+    }
+  }catch(e){ /* 用户取消 */ }
+}
+document.getElementById('btnBackupConnect').onclick = bkConnect;
+document.getElementById('btnBackupNow').onclick = async ()=>{
+  if(!bkDir || !await bkPerm(true)) return;
+  if(await cloudBackup(false)) bkLastJson = JSON.stringify(collectBackupData());
+};
+document.getElementById('btnBackupRestore').onclick = async ()=>{
+  if(!bkDir || !await bkPerm(true)) return;
+  try{
+    const dir = await bkDir.getDirectoryHandle(BK_FOLDER);
+    const fh = await dir.getFileHandle(BK_FILE);
+    const f = await fh.getFile();
+    const pack = JSON.parse(await f.text());
+    if(!pack || !pack.data) throw 0;
+    const n = Object.keys(pack.data).length;
+    if(!confirm(`备份时间：${pack.exportedAt||'未知'}\n包含 ${n} 个数据库。\n\n恢复会【覆盖】本浏览器里的现有数据，确定继续？`)) return;
+    Object.entries(pack.data).forEach(([k,v])=>localStorage.setItem(k, JSON.stringify(v)));
+    alert('恢复完成，页面将刷新');
+    location.reload();
+  }catch(e){ alert('没找到备份文件或文件损坏（还没备份过？）'); }
+};
+async function bkInit(){
+  if(obsSupported){
+    try{ const h = await idbGet('backupDir'); if(h) bkDir = h; }catch(e){}
+  }
+  updateBackupUI();
+  bkLastJson = JSON.stringify(collectBackupData());
+  setInterval(async ()=>{
+    if(!bkDir || !await bkPerm(false)) return;
+    const j = JSON.stringify(collectBackupData());
+    if(j !== bkLastJson){
+      if(await cloudBackup(true)) bkLastJson = j;
+    }
+  }, 5*60*1000);
+}
+
+/* ================= 脚本写作室（分镜表） ================= */
+const SCRIPT_KEY = 'ai-director-workbench.scripts.v2';
+const SRC_OPTIONS = ['', '出镜', '拍摄', 'AI生成素材库'];
+const ST_OPTIONS = ['待制作', '制作中', '已完成'];
+const SEED_ROWS = [
+  ['1、爆款开场钩｜悬念对比（前3秒抓注意力）','','','已完成',''],
+  ['这两个AI视频哪个更好看？','左右分屏对比两段AI生成的人物视频，左侧画面构图普通、色调平淡，右侧画面构图精致、色调和谐。','AI生成素材库','已完成',''],
+  ['你肯定选了后者——但你说得出为什么吗？','右侧画面放大，居中，左侧视频消失','AI生成素材库','已完成',''],
+  ['如果你不了解摄影，就很难看出它采用了引导线构图。','视频中的图片在左侧，右侧是引导线构图的电影海报','AI生成素材库','已完成',''],
+  ['如果你不懂绘画，就很难看出它采用了电影中常用的青橙配色。','视频中的图片在左侧，右侧是梵高的《向日葵》','AI生成素材库','已完成',''],
+  ['那如果这些都不懂，要如何使用AI来生成你想要的画面呢？','出镜','出镜','已完成',''],
+  ['2、身份背书｜价值承诺（建立信任，告诉观众能学到什么）','','','已完成',''],
+  ['今天教一个方法，让你也能生成这种电影质感的画面','出镜','出镜','已完成',''],
+  ['3、痛点共鸣｜问题诊断（让观众产生“我也是这样”的代入感）','','','已完成',''],
+  ['不是提示词堆得越多越好，而是把模糊的感受，翻译成AI能听懂的语言。','一大篇提示词的画面','AI生成素材库','已完成',''],
+  ['4、方法总起｜三层框架预告（给出学习地图，降低认知负担）','','','已完成',''],
+  ['怎么翻译？你只需要告诉AI三件事。','干净白色背景上，三个空白方块从左到右依次淡入。','AI生成素材库','已完成',''],
+  ['是谁，','第一个方块弹出关键词“是谁”，配简洁的人物线条图标。','AI生成素材库','已完成',''],
+  ['在什么情境','第二个方块弹出关键词“情境”，配场景线条图标（窗户+光线）。','AI生成素材库','已完成',''],
+  ['在干什么','第三个方块弹出关键词“动作”，配动作线条图标（奔跑姿态），三个关键词定格展示。','AI生成素材库','已完成',''],
+  ['5、第一层教学｜主体层引入（Who Layer：先立住人物）','','','已完成',''],
+  ['AI首先会确定主体，','AI界面示意，一个模糊的人物轮廓被方框框选出来，旁边标注“主体”。','AI生成素材库','已完成',''],
+  ['所以第一件事，交代清楚主体是什么样的人。','模糊的人物轮廓逐渐变清晰，从灰色剪影变成一个有细节的人物形象，标注“主体 = 什么样的人”。','AI生成素材库','已完成',''],
+  ['6、第一层教学｜主体公式（Who = 状态 + 身份）','','','已完成',''],
+  ['这里可以记住一个公式——','画面中央出现公式区域，等号两端空白待填，背景轻微发光。','AI生成素材库','已完成',''],
+  ['是谁等于状态加身份。','公式动态呈现：“是谁 = 状态 + 身份”，左边出现表情图标（状态），右边出现身份牌图标（身份）。','AI生成素材库','已完成',''],
+  ['7、第一层教学｜主体案例（具象化“状态 + 身份”）','','','已完成',''],
+  ['一个年轻人太模糊，','左屏：一个模糊的年轻人剪影，没有细节，看不清表情和姿态。','AI生成素材库','已完成',''],
+  ['但一个安静站在窗边的年轻人，','右屏：一个年轻人安静地站在窗边，自然光从侧面打过来，表情平和，姿态放松，画面质感立刻提升。','AI生成素材库','已完成',''],
+  ['画面感就出来了。','左右两屏对比定格，右屏高亮，弹出标注“状态：安静 + 身份：年轻人”。','AI生成素材库','已完成',''],
+  ['8、第一层教学｜主体案例（职业 + 状态 = 气质）','','','已完成',''],
+  ['一个职业身份太单薄，','左屏：一个简单的职业装人形，像证件照一样呆板，没有任何动态。','AI生成素材库','已完成',''],
+  ['但一个整理衣领、目视前方的职场人，','右屏：一个穿着职业装的人，微微抬手整理衣领，目光坚定地看向前方，气场十足。','AI生成素材库','已完成',''],
+  ['立刻就有了气场。','左右对比定格，右屏高亮，弹出标注“状态：自信 + 身份：职场人 = 气场”。','AI生成素材库','已完成',''],
+  ['9、第一层教学｜主体层小结（强化公式作用）','','','已完成',''],
+  ['因为身份决定角色，状态决定感觉。','关键词“身份→角色”“状态→感觉”用箭头动画连接，两个箭头汇聚到中间。','AI生成素材库','已完成',''],
+  ['所以第一步你要做的不是随便丢一个人进去，','画面出现一个随意丢入的模糊人物，AI生成结果杂乱不清。','AI生成素材库','已完成',''],
+  ['而是要把这个人物立住。','模糊人物变得清晰、立体，稳稳“立”在画面中心，光线打在人物身上。','AI生成素材库','已完成',''],
+  ['10、第二层教学｜情境层引入（Where/When Layer：环境决定情绪）','','','已完成',''],
+  ['那人物说完之后，我们要继续补上他的环境，','人物形象缩小至画面一角，周围环境从空白逐渐填充出场景线条。','AI生成素材库','已完成',''],
+  ['因为同一个人放在不同的情景里，','同一个人物剪影分别出现在三个不同场景缩略图中（室内、街头、湖边）。','AI生成素材库','已完成',''],
+  ['观众感受到的东西也会完全不一样。','三个场景缩略图各自染上不同色调（暖色、冷色、中性），人物在其中的氛围感截然不同。','AI生成素材库','已完成',''],
+  ['11、第二层教学｜情境公式（情境 = 时间 + 地点 + 氛围）','','','已完成',''],
+  ['这里呢也有一个公式，','画面中央出现新的公式区域，等号两端空白待填。','AI生成素材库','已完成',''],
+  ['情境等于时间加地点加氛围。','公式动态呈现：“情境 = 时间 + 地点 + 氛围”，三个元素分别配小图标（时钟、地标、情绪气泡）。','AI生成素材库','已完成',''],
+  ['12、第二层教学｜情境案例（时间 / 地点 / 氛围的具体应用）','','','已完成',''],
+  ['比如在室内还不够，','左屏：一个普通的室内场景，光线均匀但没有特色，人物站在中间显得平淡。','AI生成素材库','已完成',''],
+  ['在清晨有微光洒进来的室内才更具体。','右屏：同一个室内场景，清晨的微光从窗户斜射进来，光柱中有微尘飘浮，人物被侧光照亮，氛围感拉满。','AI生成素材库','已完成',''],
+  ['在室外也很模糊，','左屏切换：一个空旷的室外场景，没有时间特征，看不出是什么地方。','AI生成素材库','已完成',''],
+  ['在薄雾刚散开的湖边小路上，画面感就强很多。','右屏切换：薄雾尚未完全散去的湖边小路，远处湖面隐约可见，空气中弥漫湿润感，一束光穿透薄雾照在小路上。','AI生成素材库','已完成',''],
+  ['因为时间决定光线，地点决定空间，而氛围决定情绪，','画面分三格：左格标注“时间→光线”配清晨光柱图，中格标注“地点→空间”配湖边小路图，右格标注“氛围→情绪”配湿润雾气图。','AI生成素材库','已完成',''],
+  ['所以情境一清楚，画面就有了世界感。','三格合并为一张完整画面，清晨微光的湖边小路上站着人物，整个画面浑然一体，弹出文字“世界感”。','AI生成素材库','已完成',''],
+  ['13、第三层教学｜动作层案例 + 总结收尾（Action Layer + CTA）','','','已完成',''],
+  ['前两层走完之后，最后才是动作，','之前的人物和环境画面缩小到角落，一个新的空白层在上方展开，标注“第三层：动作”。','AI生成素材库','已完成',''],
+  ['因为动作会让这个画面从静态描述变成正在发生的瞬间。','一个静态的人物画面突然“活”过来——人物开始翻书、走路、奔跑，从定格变为动态。','AI生成素材库','已完成',''],
+  ['比如，一个神情放松的年轻人坐在窗边，低头看着手中的书。','动态镜头一：清晨微光的窗边，年轻人低头看书，手指轻轻翻动书页，阳光在书页上移动。','AI生成素材库','已完成',''],
+  ['一个神态沉稳的人走在夜色渐深的街道上，步伐不紧不慢。','动态镜头二：夜色渐深的街道，路灯刚亮起，一个人步伐从容地走过，影子被拉长。','AI生成素材库','已完成',''],
+  ['一个活泼的身影在清晨的草地上张开双臂，自由地跑动。','动态镜头三：清晨阳光下的草地，一个身影张开双臂迎风奔跑，头发被风吹起，露水溅起。','AI生成素材库','已完成',''],
+  ['你会发现只要动作一具体，','三个动态镜头快剪回放，每个镜头定格在最有张力的一帧。','AI生成素材库','已完成',''],
+  ['人物就不只是站在那儿，而是真正的活起来了。','三帧画面中的人物同时从静态变为动态，弹出文字“活起来了”。','AI生成素材库','已完成',''],
+  ['合起来你就会发现一个画面真正表达清楚不是只靠一句好看，','三层公式叠加出现：主体层 + 情境层 + 动作层，三层透明叠加合成完整画面。','AI生成素材库','已完成',''],
+  ['而是靠这三层一起成立，','三层公式高亮闪烁，强调“一起成立”。','AI生成素材库','已完成',''],
+  ['是谁决定主角是谁，在什么情境里决定画面的世界，在干什么决定这一刻在发生什么。','三层分别高亮：第一层“是谁→主角”，第二层“情境→世界”，第三层“动作→此刻”，每层配对应画面缩略图。','AI生成素材库','已完成',''],
+  ['当这三层都清楚了，AI才不会乱猜，','三层公式合为一个完整提示词框，输入AI后生成一张精准的画面。','AI生成素材库','已完成',''],
+  ['你才真正的开始用AI讲故事。','回到博主出镜总结画面，三层公式在身后悬浮，字幕“用AI讲故事”。','出镜','已完成','']
+].map((r,i)=>({id:i+1, line:r[0], visual:r[1], src:r[2], st:r[3], sfx:r[4]}));
+const seedScripts = [
+  {id:1, topicId:null, title:'用最直白的语言教你AI画面三层框架法', gongming:'学会把感觉翻译成AI能听懂的语言，让AI生成的画面拥有电影质感。', rows:SEED_ROWS, status:'已完成', updatedAt:'2026-07-19 20:15'}
+];
+function loadScripts(){ try{ const raw=localStorage.getItem(SCRIPT_KEY); if(raw) return JSON.parse(raw); }catch(e){} return null; }
+let scripts = loadScripts() || seedScripts.slice();
+function saveScripts(){ localStorage.setItem(SCRIPT_KEY, JSON.stringify(scripts)); }
+function nextScriptId(){ return scripts.reduce((m,t)=>Math.max(m,t.id),0)+1; }
+function nextRowId(s){ return s.rows.reduce((m,r)=>Math.max(m,r.id),0)+1; }
+function charsOf(s){ return (s||'').replace(/\s/g,'').length; }
+function durStr(total){ const sec=Math.max(1,Math.round(total/4.5)); return sec<60 ? `约${sec}秒` : `约${Math.floor(sec/60)}分${sec%60}秒`; }
+let currentScriptId = null;
+let saveTimer = null;
+function currentScript(){ return scripts.find(x=>x.id===currentScriptId) || null; }
+
+function renderScripts(){
+  const pend = topics.filter(t=>t.status==='已排产' && !scripts.some(s=>s.topicId===t.id));
+  const pbox = document.getElementById('pendingTopics');
+  const pendCard = t=>`<div class="pending-card"><span class="t">${t.ep?`EP${String(t.ep).padStart(2,'0')} · `:''}${esc(t.title)}</span><button class="mini-btn" data-tid="${t.id}">＋写脚本</button></div>`;
+  let phtml = '';
+  seriesList.forEach(s=>{
+    const items = pend.filter(t=>t.seriesId===s.id);
+    if(items.length) phtml += `<div class="pend-group">📚 ${esc(s.name)}</div>` + items.map(pendCard).join('');
+  });
+  const pendSingles = pend.filter(t=>!t.seriesId || !seriesOf(t.seriesId));
+  if(pendSingles.length) phtml += (phtml?'<div class="pend-group">📦 单篇选题</div>':'') + pendSingles.map(pendCard).join('');
+  pbox.innerHTML = phtml || '<div style="font-size:12px;color:var(--muted);padding:6px 2px">没有待写的选题<br>去选题库把选题推进到「已排产」</div>';
+  pbox.querySelectorAll('[data-tid]').forEach(el=>el.onclick=()=>newScriptFromTopic(+el.dataset.tid));
+
+  const sbox = document.getElementById('scriptList');
+  sbox.innerHTML = scripts.length ? scripts.map(s=>{
+    const total = (s.rows||[]).reduce((n,r)=>n+charsOf(r.line),0);
+    const rc = (s.rows||[]).length;
+    const st = topics.find(x=>x.id===s.topicId);
+    const sn = st && seriesOf(st.seriesId) ? `📚${esc(seriesOf(st.seriesId).name)} · ` : '';
+    return `<div class="script-card ${s.id===currentScriptId?'active':''}" data-sid="${s.id}">
+      <div class="t">${esc(s.title)}</div>
+      <div class="m">${sn}<span class="status st-${s.status==='已完成'?'已发布':'待评估'}">${s.status}</span> · ${rc}行 · ${total}字 · ${esc(s.updatedAt.slice(5))}</div>
+    </div>`;
+  }).join('') : '<div style="font-size:12px;color:var(--muted);padding:6px 2px">还没有脚本</div>';
+  sbox.querySelectorAll('[data-sid]').forEach(el=>el.onclick=()=>openScript(+el.dataset.sid));
+  document.getElementById('navScriptCount').textContent = scripts.length;
+  updateScriptStats();
+}
+
+function openScript(id){
+  currentScriptId = id;
+  const s = currentScript(); if(!s) return;
+  document.getElementById('scriptEmpty').style.display = 'none';
+  document.getElementById('scriptForm').style.display = '';
+  document.getElementById('sTitle').value = s.title;
+  document.getElementById('sGongming').value = s.gongming||'';
+  document.getElementById('sStatus').value = s.status||'草稿';
+  const t = topics.find(x=>x.id===s.topicId);
+  document.getElementById('sTopic').textContent = t ? ('🎯 ' + t.title) : '未关联选题（自由脚本）';
+  document.getElementById('autoSaveTip').textContent = '';
+  renderSheet();
+  renderScripts();
+}
+
+function blankScript(topicId){
+  const t = topics.find(x=>x.id===topicId);
+  return {id:nextScriptId(), topicId:topicId||null, title:t?t.title:'未命名脚本', gongming:t?(t.angle||''):'',
+    rows:[{id:1,line:'',visual:'',src:'',st:'待制作',sfx:''}], status:'草稿', updatedAt:nowStr()};
+}
+function newScriptFromTopic(topicId){ const s = blankScript(topicId); scripts.unshift(s); saveScripts(); openScript(s.id); }
+document.getElementById('btnNewScript').onclick = ()=>{ const s = blankScript(null); scripts.unshift(s); saveScripts(); openScript(s.id); };
+
+/* --- 分镜表渲染 --- */
+function renderSheet(){
+  const s = currentScript(); if(!s) return;
+  const body = document.getElementById('sheetBody');
+  body.innerHTML = s.rows.map((r,i)=>`
+    <div class="sheet-row" data-rid="${r.id}">
+      <div class="c-no">${i+1}</div>
+      <div class="c-line"><textarea data-f="line" rows="1">${esc(r.line)}</textarea></div>
+      <div class="c-visual"><textarea data-f="visual" rows="1">${esc(r.visual)}</textarea></div>
+      <div class="c-src"><select data-f="src">${SRC_OPTIONS.map(o=>`<option value="${o}" ${r.src===o?'selected':''}>${o||'—'}</option>`).join('')}</select></div>
+      <div class="c-st"><select data-f="st" class="sel-${r.st}">${ST_OPTIONS.map(o=>`<option ${r.st===o?'selected':''}>${o}</option>`).join('')}</select></div>
+      <div class="c-sfx"><input data-f="sfx" value="${esc(r.sfx)}"></div>
+      <div class="c-ops">
+        <button data-op="up" title="上移">↑</button><button data-op="down" title="下移">↓</button>
+        <button data-op="ins" title="下方插入一行">✚</button><button data-op="del" title="删除本行">🗑</button>
+      </div>
+    </div>`).join('');
+  body.querySelectorAll('[data-f]').forEach(el=>{
+    el.addEventListener('input', ()=>{
+      const rowEl = el.closest('.sheet-row');
+      const r = s.rows.find(x=>x.id===+rowEl.dataset.rid);
+      r[el.dataset.f] = el.value;
+      if(el.dataset.f==='st') el.className = 'sel-'+el.value;
+      if(el.tagName==='TEXTAREA') autosize(el);
+      updateScriptStats(); scheduleSave();
+    });
+  });
+  body.querySelectorAll('[data-op]').forEach(el=>{
+    el.onclick = ()=>{
+      const rowEl = el.closest('.sheet-row');
+      const idx = s.rows.findIndex(x=>x.id===+rowEl.dataset.rid);
+      const op = el.dataset.op;
+      if(op==='del'){
+        const r = s.rows[idx];
+        if((r.line||r.visual) && !confirm('删除这一行？')) return;
+        s.rows.splice(idx,1);
+      }
+      if(op==='up' && idx>0){ const tmp=s.rows[idx-1]; s.rows[idx-1]=s.rows[idx]; s.rows[idx]=tmp; }
+      if(op==='down' && idx<s.rows.length-1){ const tmp=s.rows[idx+1]; s.rows[idx+1]=s.rows[idx]; s.rows[idx]=tmp; }
+      if(op==='ins'){ s.rows.splice(idx+1,0,{id:nextRowId(s),line:'',visual:'',src:'',st:'待制作',sfx:''}); }
+      saveScripts(); renderSheet(); renderScripts();
+    };
+  });
+  body.querySelectorAll('textarea').forEach(autosize);
+  updateScriptStats();
+}
+function autosize(ta){ ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,300)+'px'; }
+document.getElementById('btnAddRow').onclick = ()=>{
+  const s = currentScript(); if(!s) return;
+  s.rows.push({id:nextRowId(s),line:'',visual:'',src:'',st:'待制作',sfx:''});
+  saveScripts(); renderSheet(); renderScripts();
+};
+
+function updateScriptStats(){
+  const el = document.getElementById('scriptStats');
+  if(!el) return;
+  const s = currentScript();
+  if(!s){ el.textContent=''; return; }
+  const total = s.rows.reduce((n,r)=>n+charsOf(r.line),0);
+  el.textContent = `台词 ${total} 字 · 口播${durStr(total)} · ${s.rows.length} 行`;
+}
+
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{
+    const s = currentScript(); if(!s) return;
+    s.updatedAt = nowStr(); saveScripts(); renderScripts();
+    document.getElementById('autoSaveTip').textContent = '✓ 已自动保存 ' + nowStr().slice(11);
+  }, 600);
+}
+
+['sTitle','sGongming'].forEach(id=>document.getElementById(id).addEventListener('input', e=>{
+  const s = currentScript(); if(!s) return;
+  if(id==='sTitle') s.title = e.target.value; else s.gongming = e.target.value;
+  scheduleSave();
+}));
+document.getElementById('sStatus').addEventListener('change', e=>{
+  const s = currentScript(); if(!s) return;
+  s.status = e.target.value; scheduleSave();
+});
+
+document.getElementById('btnScriptDel').onclick = ()=>{
+  if(!currentScriptId) return;
+  if(!confirm('删除当前脚本？')) return;
+  scripts = scripts.filter(x=>x.id!==currentScriptId);
+  currentScriptId = null; saveScripts();
+  document.getElementById('scriptForm').style.display = 'none';
+  document.getElementById('scriptEmpty').style.display = '';
+  renderScripts();
+};
+
+document.getElementById('btnScriptAi').onclick = ()=>{
+  if(!currentScriptId){ alert('先打开一个脚本'); return; }
+  const s = currentScript();
+  const t = topics.find(x=>x.id===s.topicId);
+  openPrompt('⧉ 分镜脚本指令',
+`你是我的短视频分镜脚本写手。我的账号方向：「AI导演」——教别人用AI做出电影感视频（运镜、构图、配色、布光、AI视频工具、提示词技巧）。
+我的风格：口语化，像和朋友聊天；每300字至少一个具体案例或操作细节；开头禁止"随着AI的发展"式套话。
+
+请为以下选题写一条 60~90 秒口播视频的分镜脚本：
+选题：${s.title}
+切入角度：${t ? t.angle : '（自由发挥）'}
+标签：${t ? t.tags.join('、') : '无'}
+
+写法要求（台词驱动画面）：
+1. 每一两句台词对应一行，每行 = 台词 + 这一镜的画面描述
+2. 节奏：开场钩（前3秒抓注意力）→ 痛点共鸣 → 方法/教学 → 案例演示 → 总结+互动引导
+3. 画面描述要可执行：写明景别、构图、对比、动效，能直接拿去指导AI生成或拍摄
+4. 素材来源只能从：出镜 / 拍摄 / AI生成素材库 中选
+
+严格输出 JSON，不要输出其他任何内容：
+{"title":"${s.title}","gongming":"一句话说清观众能得到什么","rows":[{"line":"台词","visual":"画面描述","src":"AI生成素材库","st":"待制作","sfx":""}]}
+
+生成后把 JSON 发给我，我会用「📥 导入」铺进分镜表。`);
+};
+
+/* --- 导入（Excel粘贴 / CSV文件 / AI-JSON） --- */
+let pendingImport = null;
+document.getElementById('btnScriptImport').onclick = ()=>{
+  if(!currentScriptId){ alert('先打开一个脚本'); return; }
+  document.getElementById('importScriptText').value = '';
+  document.getElementById('importPreview').innerHTML = '';
+  document.getElementById('btnImportScriptApply').style.display = 'none';
+  pendingImport = null;
+  document.getElementById('importScriptMask').classList.add('show');
+};
+document.getElementById('btnImportScriptCancel').onclick = ()=>document.getElementById('importScriptMask').classList.remove('show');
+document.getElementById('importScriptMask').onclick = e=>{ if(e.target.id==='importScriptMask') e.target.classList.remove('show'); };
+document.getElementById('btnImportFile').onclick = ()=>document.getElementById('csvFileInput').click();
+document.getElementById('csvFileInput').onchange = e=>{
+  const f = e.target.files[0]; if(!f) return;
+  readFileSmart(f, text=>{
+    document.getElementById('importScriptText').value = text;
+    document.getElementById('btnImportScriptParse').click();
+  });
+  e.target.value = '';
+};
+function readFileSmart(file, cb){
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    let text = new TextDecoder('utf-8').decode(reader.result);
+    if(text.includes('\uFFFD')) text = new TextDecoder('gbk').decode(reader.result);
+    cb(text);
+  };
+  reader.readAsArrayBuffer(file);
+}
+document.getElementById('btnImportScriptParse').onclick = ()=>{
+  const raw = document.getElementById('importScriptText').value.trim();
+  const res = parseImport(raw);
+  if(res.error){ alert(res.error); return; }
+  pendingImport = res;
+  const head = res.rows.slice(0,5).map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.line).slice(0,44)}</td><td>${esc(r.visual).slice(0,44)}</td><td>${esc(r.src)}</td><td>${esc(r.st)}</td></tr>`).join('');
+  document.getElementById('importPreview').innerHTML = `<b>解析到 ${res.rows.length} 行</b>（预览前5行）：<table><tr><th>#</th><th>台词</th><th>画面描述</th><th>来源</th><th>状态</th></tr>${head}</table>`;
+  document.getElementById('btnImportScriptApply').style.display = '';
+};
+document.getElementById('btnImportScriptApply').onclick = ()=>{
+  if(!pendingImport) return;
+  const s = currentScript();
+  const hasContent = s.rows.some(r=>r.line||r.visual);
+  if(hasContent && !confirm(`导入将替换当前 ${s.rows.length} 行内容，确定？`)) return;
+  s.rows = pendingImport.rows.map((r,i)=>Object.assign({id:i+1}, r));
+  if(pendingImport.title) s.title = pendingImport.title;
+  if(pendingImport.gongming) s.gongming = pendingImport.gongming;
+  s.updatedAt = nowStr();
+  saveScripts();
+  document.getElementById('sTitle').value = s.title;
+  document.getElementById('sGongming').value = s.gongming;
+  renderSheet(); renderScripts();
+  document.getElementById('importScriptMask').classList.remove('show');
+  alert(`已导入 ${s.rows.length} 行`);
+};
+function parseImport(text){
+  if(!text) return {error:'请先粘贴内容或选择文件'};
+  if(text[0]==='{' || text[0]==='['){
+    try{
+      let d = JSON.parse(text);
+      if(Array.isArray(d)) d = {rows:d};
+      if(!d || !Array.isArray(d.rows)) return {error:'JSON 里找不到 rows 数组'};
+      return { title:d.title||'', gongming:d.gongming||'', rows:d.rows.map((r,i)=>normalizeRow(r,i)) };
+    }catch(e){ return {error:'看起来像 JSON，但解析失败，请检查格式'}; }
+  }
+  const grid = text.split(/\r?\n/)[0].includes('\t')
+    ? text.split(/\r?\n/).filter(l=>l.trim()).map(l=>l.split('\t'))
+    : parseCSV(text);
+  if(!grid.length) return {error:'没有解析到内容'};
+  const rows = grid.map((cols,i)=>normalizeRow({line:cols[0],visual:cols[1],src:cols[2],st:cols[3],sfx:cols[4]},i));
+  return {rows};
+}
+function normalizeRow(r,i){
+  return { id:i+1,
+    line:String(r.line ?? r['台词'] ?? r['文案'] ?? '').trim(),
+    visual:String(r.visual ?? r['画面'] ?? r['画面描述'] ?? '').trim(),
+    src:matchSrc(r.src ?? r['来源'] ?? r['素材来源']),
+    st:matchSt(r.st ?? r['状态'] ?? r['完成状态']),
+    sfx:String(r.sfx ?? r['音效'] ?? '').trim() };
+}
+function matchSrc(v){
+  v = String(v||'').trim();
+  if(!v) return '';
+  if(v.includes('出镜')) return '出镜';
+  if(v.includes('拍摄')) return '拍摄';
+  if(/ai/i.test(v) || v.includes('生成') || v.includes('素材')) return 'AI生成素材库';
+  return '';
+}
+function matchSt(v){
+  v = String(v||'').trim();
+  if(v.includes('已完成') || (v.includes('完成') && !v.includes('未'))) return '已完成';
+  if(v.includes('制作中')) return '制作中';
+  return '待制作';
+}
+function parseCSV(text){
+  const rows=[]; let row=[], cur='', inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i];
+    if(inQ){
+      if(c==='"'){ if(text[i+1]==='"'){ cur+='"'; i++; } else inQ=false; }
+      else cur+=c;
+    } else {
+      if(c==='"') inQ=true;
+      else if(c===','){ row.push(cur); cur=''; }
+      else if(c==='\n'){ row.push(cur); rows.push(row); row=[]; cur=''; }
+      else if(c!=='\r') cur+=c;
+    }
+  }
+  row.push(cur); rows.push(row);
+  return rows.filter(r=>r.some(c=>String(c).trim()));
+}
+
+/* ================= 制作与发布 ================= */
+const PROD_KEY = 'ai-director-workbench.productions.v1';
+const PROD_STAGES = ['待拍摄','AI素材生成中','剪辑中','待发布','已发布'];
+const PLATFORMS = ['抖音','小红书','B站','视频号'];
+const seedProds = [
+  {id:1, scriptId:1, title:'用最直白的语言教你AI画面三层框架法', stage:'已发布',
+   platforms:{'抖音':{date:'2026-07-19',link:''},'小红书':{date:'2026-07-19',link:''},'B站':{date:'2026-07-20',link:''},'视频号':{date:'',link:''}},
+   note:'示例数据：换成你自己的真实排期', createdAt:'2026-07-19'}
+];
+function loadProds(){ try{ const raw=localStorage.getItem(PROD_KEY); if(raw) return JSON.parse(raw); }catch(e){} return null; }
+let productions = loadProds() || seedProds.slice();
+function saveProds(){ localStorage.setItem(PROD_KEY, JSON.stringify(productions)); }
+function nextProdId(){ return productions.reduce((m,t)=>Math.max(m,t.id),0)+1; }
+let prodFilter = '全部';
+let prodQ = '';
+
+function scriptOfProd(p){ return scripts.find(s=>s.id===p.scriptId); }
+function shotStats(p){
+  const s = scriptOfProd(p);
+  if(!s || !s.rows) return null;
+  const mats = s.rows.filter(r=>r.src);
+  const done = mats.filter(r=>r.st==='已完成').length;
+  return {total:mats.length, done};
+}
+
+function renderProds(){
+  const band = document.getElementById('prodBand');
+  let html = `<span class="sp ${prodFilter==='全部'?'on':''}" data-st="全部">全部 ${productions.length}</span>`;
+  PROD_STAGES.forEach(st=>{
+    const n = productions.filter(p=>p.stage===st).length;
+    html += `<span class="sp ${prodFilter===st?'on':''}" data-st="${st}">${st} ${n}</span>`;
+  });
+  band.innerHTML = html;
+  band.querySelectorAll('.sp').forEach(el=>el.onclick=()=>{ prodFilter=el.dataset.st; renderProds(); });
+
+  const pend = scripts.filter(s=>s.status==='已完成' && !productions.some(p=>p.scriptId===s.id));
+  const pbox = document.getElementById('prodPending');
+  pbox.innerHTML = pend.length ? pend.map(s=>
+    `<div class="pending-card" style="max-width:520px"><span class="t">${esc(s.title)}</span><button class="mini-btn" data-sid="${s.id}">＋ 立项制作</button></div>`).join('')
+    : '<div style="font-size:12px;color:var(--muted);padding:4px 2px">没有待立项的脚本（脚本标记「已完成」后会出现在这里）</div>';
+  pbox.querySelectorAll('[data-sid]').forEach(el=>el.onclick=()=>{
+    const s = scripts.find(x=>x.id===+el.dataset.sid);
+    const p = {id:nextProdId(), scriptId:s.id, title:s.title, stage:'待拍摄', platforms:{}, note:'', createdAt:today()};
+    PLATFORMS.forEach(pl=>p.platforms[pl]={date:'',link:''});
+    productions.unshift(p); saveProds(); renderProds();
+  });
+
+  const stages = prodFilter==='全部' ? PROD_STAGES : [prodFilter];
+  const kb = document.getElementById('prodKanban');
+  kb.style.gridTemplateColumns = `repeat(${stages.length},1fr)`;
+  kb.innerHTML = stages.map(st=>{
+    const list = productions.filter(p=>p.stage===st && (!prodQ || p.title.toLowerCase().includes(prodQ)));
+    const cards = list.map(p=>{
+      const ss = shotStats(p);
+      const pct = ss && ss.total ? Math.round(ss.done/ss.total*100) : 0;
+      const plat = PLATFORMS.filter(pl=>p.platforms[pl] && p.platforms[pl].date).map(pl=>`${pl} ${p.platforms[pl].date.slice(5)}`).join(' · ');
+      return `<div class="kb-card" data-pid="${p.id}">
+        <div class="t">${esc(p.title)}</div>
+        <div class="m">${ss ? `素材 ${ss.done}/${ss.total}` : '未关联脚本'}${plat ? '<br>📅 '+esc(plat) : ''}</div>
+        ${ss && ss.total ? `<div class="progress-line"><i style="width:${pct}%"></i></div>` : ''}
+        <div class="move-btns">
+          <button data-mv="-1">◀ 上一步</button>
+          <button data-mv="1">下一步 ▶</button>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="kb-col"><div class="kb-head">${st}<span class="n">${list.length}</span></div>${cards || '<div style="font-size:11px;color:var(--muted);padding:6px">空</div>'}</div>`;
+  }).join('');
+  kb.querySelectorAll('.kb-card').forEach(el=>{
+    el.onclick = e=>{ if(e.target.dataset.mv===undefined) openProdModal(+el.dataset.pid); };
+  });
+  kb.querySelectorAll('[data-mv]').forEach(el=>{
+    el.onclick = ()=>{
+      const p = productions.find(x=>x.id===+el.closest('.kb-card').dataset.pid);
+      const i = PROD_STAGES.indexOf(p.stage);
+      const ni = Math.min(Math.max(i + (+el.dataset.mv), 0), PROD_STAGES.length-1);
+      p.stage = PROD_STAGES[ni];
+      saveProds(); renderProds();
+    };
+  });
+  document.getElementById('navProdCount').textContent = productions.filter(p=>p.stage!=='已发布').length;
+}
+
+document.getElementById('prodSearch').oninput = e=>{ prodQ = e.target.value.trim().toLowerCase(); renderProds(); };
+document.getElementById('btnProdNew').onclick = ()=>{
+  const p = {id:nextProdId(), scriptId:null, title:'未命名视频', stage:'待拍摄', platforms:{}, note:'', createdAt:today()};
+  PLATFORMS.forEach(pl=>p.platforms[pl]={date:'',link:''});
+  productions.unshift(p); saveProds(); renderProds(); openProdModal(p.id);
+};
+
+function openProdModal(id){
+  const p = productions.find(x=>x.id===id); if(!p) return;
+  document.getElementById('pId').value = p.id;
+  document.getElementById('pTitle').value = p.title;
+  const s = scriptOfProd(p);
+  document.getElementById('pScript').textContent = s ? ('✍️ ' + s.title) : '未关联脚本';
+  PLATFORMS.forEach((pl,i)=>{
+    document.getElementById('pD'+i).value = (p.platforms[pl]||{}).date || '';
+    document.getElementById('pL'+i).value = (p.platforms[pl]||{}).link || '';
+  });
+  document.getElementById('pNote').value = p.note || '';
+  document.getElementById('prodMask').classList.add('show');
+}
+document.getElementById('btnProdCancel').onclick = ()=>document.getElementById('prodMask').classList.remove('show');
+document.getElementById('prodMask').onclick = e=>{ if(e.target.id==='prodMask') e.target.classList.remove('show'); };
+document.getElementById('btnProdSave').onclick = ()=>{
+  const p = productions.find(x=>x.id===+document.getElementById('pId').value); if(!p) return;
+  p.title = document.getElementById('pTitle').value.trim() || p.title;
+  PLATFORMS.forEach((pl,i)=>{ p.platforms[pl] = {date:document.getElementById('pD'+i).value.trim(), link:document.getElementById('pL'+i).value.trim()}; });
+  p.note = document.getElementById('pNote').value;
+  saveProds(); renderProds();
+  document.getElementById('prodMask').classList.remove('show');
+};
+document.getElementById('btnProdDel').onclick = ()=>{
+  if(!confirm('删除这个制作单？')) return;
+  productions = productions.filter(x=>x.id!==+document.getElementById('pId').value);
+  saveProds(); renderProds();
+  document.getElementById('prodMask').classList.remove('show');
+};
+document.getElementById('btnProdAi').onclick = ()=>{
+  const list = productions.filter(p=>p.stage!=='已发布').map(p=>'- '+p.title+'（'+p.stage+'）').join('\n') || '（暂无）';
+  openPrompt('⧉ 发布策略指令',
+`你是我的自媒体发布策略顾问。我的账号方向：「AI导演」——教别人用AI做出电影感视频。发布平台：抖音、小红书、B站、视频号。
+
+我当前在制作中的视频：
+${list}
+
+请针对每条视频给出：
+1. 建议的发布时间（结合各平台流量高峰和你的经验）
+2. 3 个标题变体（适配不同平台风格：抖音强钩子 / 小红书干货清单体 / B站深度感）
+3. 封面文案建议（一句话，大字报风格）
+4. 发布顺序建议（哪个平台先发）
+
+输出清晰的文本即可，我会人工参考执行，不需要 JSON。`);
+};
+
+/* ================= 通用 JSON 导入 ================= */
+let jsonHandler = null;
+function openJsonImport(title, hint, handler){
+  document.getElementById('jsonTitle').textContent = title;
+  document.getElementById('jsonHint').innerHTML = hint;
+  document.getElementById('jsonText').value = '';
+  jsonHandler = handler;
+  document.getElementById('jsonMask').classList.add('show');
+}
+document.getElementById('btnJsonCancel').onclick = ()=>document.getElementById('jsonMask').classList.remove('show');
+document.getElementById('jsonMask').onclick = e=>{ if(e.target.id==='jsonMask') e.target.classList.remove('show'); };
+document.getElementById('btnJsonApply').onclick = ()=>{
+  const raw = document.getElementById('jsonText').value.trim();
+  if(!raw){ alert('先粘贴 JSON'); return; }
+  let data;
+  try{
+    const m = raw.match(/\[[\s\S]*\]/);
+    data = JSON.parse(m ? m[0] : raw);
+    if(!Array.isArray(data)) throw 0;
+  }catch(e){ alert('解析失败：需要 JSON 数组 [{...}]'); return; }
+  const n = jsonHandler ? jsonHandler(data) : 0;
+  document.getElementById('jsonMask').classList.remove('show');
+  alert(`已导入 ${n} 条`);
+};
+
+/* ================= 数据复盘 ================= */
+const POST_KEY = 'ai-director-workbench.posts.v1';
+const LESSON_KEY = 'ai-director-workbench.lessons.v1';
+const LESSON_TYPES = ['加分行为','减分行为','中性观察'];
+const seedPosts = [
+  {id:1, title:'示例：用最直白的语言教你AI画面三层框架法', platform:'抖音', date:'2026-07-19', plays:128000, likes:32000, comments:2100, favs:8600, follows:1200},
+  {id:2, title:'示例：用最直白的语言教你AI画面三层框架法', platform:'小红书', date:'2026-07-19', plays:46000, likes:5800, comments:640, favs:4200, follows:380},
+  {id:3, title:'示例：3个运镜提示词，让AI视频秒变电影感', platform:'B站', date:'2026-07-21', plays:89000, likes:9600, comments:1800, favs:11000, follows:950}
+];
+const seedLessons = [
+  {id:1, type:'加分行为', content:'示例：开头 3 秒直接放"前后对比画面"，不说废话，完播率明显更高', source:'三层框架法那条', tags:[], createdAt:'2026-07-20'},
+  {id:2, type:'减分行为', content:'示例：中段连续 20 秒纯口播没有画面变化，评论区出现"困了"，以后每 5 秒切画面', source:'三层框架法那条', tags:[], createdAt:'2026-07-20'}
+];
+function loadPosts(){ try{ const raw=localStorage.getItem(POST_KEY); if(raw) return JSON.parse(raw); }catch(e){} return null; }
+function loadLessons(){ try{ const raw=localStorage.getItem(LESSON_KEY); if(raw) return JSON.parse(raw); }catch(e){} return null; }
+let posts = loadPosts() || seedPosts.slice();
+let lessons = loadLessons() || seedLessons.slice();
+function savePosts(){ localStorage.setItem(POST_KEY, JSON.stringify(posts)); }
+function saveLessons(){ localStorage.setItem(LESSON_KEY, JSON.stringify(lessons)); }
+function nextPostId(){ return posts.reduce((m,t)=>Math.max(m,t.id),0)+1; }
+function nextLessonId(){ return lessons.reduce((m,t)=>Math.max(m,t.id),0)+1; }
+let lessonFilter = '全部';
+let postQ = '';
+function pct(a,b){ return b>0 ? (a/b*100).toFixed(1)+'%' : '—'; }
+function wan(n){ return n>=10000 ? (n/10000).toFixed(1)+'w' : String(n); }
+
+function renderReview(){
+  const totalPlays = posts.reduce((s,p)=>s+(+p.plays||0),0);
+  const totalLikes = posts.reduce((s,p)=>s+(+p.likes||0),0);
+  const totalFollows = posts.reduce((s,p)=>s+(+p.follows||0),0);
+  document.getElementById('reviewMetrics').innerHTML = [
+    {v:posts.length, k:'已录作品'},
+    {v:wan(totalPlays), k:'总播放'},
+    {v:wan(totalLikes), k:'总点赞'},
+    {v:pct(totalLikes,totalPlays), k:'整体赞播比'},
+    {v:wan(totalFollows), k:'总涨粉'}
+  ].map(m=>`<div class="metric"><div class="v">${m.v}</div><div class="k">${m.k}</div></div>`).join('');
+
+  const list = posts.filter(p=>!postQ || p.title.toLowerCase().includes(postQ))
+    .slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  document.getElementById('postTbody').innerHTML = list.map(p=>`<tr data-pid="${p.id}">
+    <td>${esc(p.title)}</td><td>${esc(p.platform)}</td><td>${esc(p.date)}</td>
+    <td>${wan(+p.plays||0)}</td><td>${wan(+p.likes||0)}</td><td>${wan(+p.comments||0)}</td><td>${wan(+p.favs||0)}</td><td>${wan(+p.follows||0)}</td>
+    <td class="rate r4">${pct(+p.likes||0,+p.plays||0)}</td><td class="rate r3">${pct(+p.comments||0,+p.plays||0)}</td>
+  </tr>`).join('') || '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:20px">还没录数据，点「＋ 录数据」开始</td></tr>';
+  document.getElementById('postTbody').querySelectorAll('tr[data-pid]').forEach(el=>el.onclick=()=>openPostModal(+el.dataset.pid));
+
+  const band = document.getElementById('lessonFilters');
+  let html = `<span class="sp ${lessonFilter==='全部'?'on':''}" style="background:${lessonFilter==='全部'?'var(--accent)':'#EFF0E2'};color:${lessonFilter==='全部'?'#fff':'var(--accent-d)'};padding:5px 14px;border-radius:16px;font-size:12px;cursor:pointer" data-t="全部">全部 ${lessons.length}</span> `;
+  LESSON_TYPES.forEach(t=>{
+    const n = lessons.filter(l=>l.type===t).length;
+    const on = lessonFilter===t;
+    html += `<span style="background:${on?'var(--accent)':'#EFF0E2'};color:${on?'#fff':'var(--accent-d)'};padding:5px 14px;border-radius:16px;font-size:12px;cursor:pointer" data-t="${t}">${t} ${n}</span> `;
+  });
+  band.innerHTML = html;
+  band.querySelectorAll('[data-t]').forEach(el=>el.onclick=()=>{ lessonFilter=el.dataset.t; renderReview(); });
+
+  const ll = lessons.filter(l=>lessonFilter==='全部' || l.type===lessonFilter);
+  document.getElementById('lessonList').innerHTML = ll.map(l=>{
+    const cls = l.type==='加分行为'?'plus':(l.type==='减分行为'?'minus':'neutral');
+    return `<div class="g-card">
+      <div><span class="chip ${cls}">${esc(l.type)}</span></div>
+      <div class="d">${esc(l.content)}</div>
+      <div class="foot"><span class="date">${esc(l.source||'')}${l.source?' · ':''}${esc(l.createdAt||'')}</span><button class="mini-btn danger" data-lid="${l.id}">删除</button></div>
+    </div>`;
+  }).join('') || '<div class="empty">暂无经验，发完视频复盘时记一条</div>';
+  document.getElementById('lessonList').querySelectorAll('[data-lid]').forEach(el=>el.onclick=()=>{
+    if(!confirm('删除这条经验？')) return;
+    lessons = lessons.filter(l=>l.id!==+el.dataset.lid);
+    saveLessons(); renderReview();
+  });
+  document.getElementById('navReviewCount').textContent = lessons.length;
+}
+
+document.getElementById('postSearch').oninput = e=>{ postQ = e.target.value.trim().toLowerCase(); renderReview(); };
+document.getElementById('btnLessonAdd').onclick = ()=>{
+  const content = document.getElementById('lContent').value.trim();
+  if(!content){ alert('先写内容'); return; }
+  lessons.unshift({id:nextLessonId(), type:document.getElementById('lType').value, content, source:document.getElementById('lSource').value.trim(), tags:[], createdAt:today()});
+  document.getElementById('lContent').value=''; document.getElementById('lSource').value='';
+  saveLessons(); renderReview();
+};
+
+function openPostModal(id){
+  const p = id ? posts.find(x=>x.id===id) : {id:'', title:'', platform:'抖音', date:today(), plays:'', likes:'', comments:'', favs:'', follows:''};
+  document.getElementById('poId').value = p.id;
+  document.getElementById('poTitle').value = p.title;
+  document.getElementById('poPlatform').value = p.platform;
+  document.getElementById('poDate').value = p.date;
+  document.getElementById('poPlays').value = p.plays;
+  document.getElementById('poLikes').value = p.likes;
+  document.getElementById('poComments').value = p.comments;
+  document.getElementById('poFavs').value = p.favs;
+  document.getElementById('poFollows').value = p.follows;
+  document.getElementById('postMask').classList.add('show');
+}
+document.getElementById('btnPostNew').onclick = ()=>openPostModal(null);
+document.getElementById('btnPostCancel').onclick = ()=>document.getElementById('postMask').classList.remove('show');
+document.getElementById('postMask').onclick = e=>{ if(e.target.id==='postMask') e.target.classList.remove('show'); };
+document.getElementById('btnPostSave').onclick = ()=>{
+  const title = document.getElementById('poTitle').value.trim();
+  if(!title){ alert('标题必填'); return; }
+  const num = id=>{ const v = parseInt(document.getElementById(id).value.replace(/[^\d]/g,''),10); return isNaN(v)?0:v; };
+  const data = {title, platform:document.getElementById('poPlatform').value, date:document.getElementById('poDate').value.trim()||today(),
+    plays:num('poPlays'), likes:num('poLikes'), comments:num('poComments'), favs:num('poFavs'), follows:num('poFollows')};
+  const id = document.getElementById('poId').value;
+  if(id){ Object.assign(posts.find(x=>x.id===+id), data); }
+  else posts.unshift(Object.assign({id:nextPostId()}, data));
+  savePosts(); renderReview();
+  document.getElementById('postMask').classList.remove('show');
+};
+document.getElementById('btnPostDel').onclick = ()=>{
+  const id = document.getElementById('poId').value;
+  if(!id || !confirm('删除这条数据？')) return;
+  posts = posts.filter(x=>x.id!==+id);
+  savePosts(); renderReview();
+  document.getElementById('postMask').classList.remove('show');
+};
+
+document.getElementById('btnReviewAi').onclick = ()=>{
+  const rows = posts.map(p=>`- ${p.title}（${p.platform} ${p.date}）：播放${p.plays} 点赞${p.likes} 评论${p.comments} 收藏${p.favs} 涨粉${p.follows}`).join('\n') || '（暂无数据）';
+  openPrompt('⧉ 复盘分析指令',
+`你是我的自媒体数据复盘教练。我的账号方向：「AI导演」——教别人用AI做出电影感视频。
+
+以下是我已发布作品的数据：
+${rows}
+
+请帮我做复盘：
+1. 先直接告诉我：哪条数据最好、哪条最差，你的判断依据（赞播比/评播比/收藏率）
+2. 找出可复制的"加分行为"和要避开的"减分行为"
+3. 给出 3 条下一步行动建议
+
+然后把结论严格输出为 JSON 数组（这是我要导入工作台经验库的数据，不要输出其他任何内容）：
+[{
+  "type": "加分行为 或 减分行为 或 中性观察",
+  "content": "一条具体、可执行的经验（一句话）",
+  "source": "来自哪条视频/哪组数据",
+  "tags": []
+}]
+
+生成后把 JSON 发给我，我会用工作台「数据复盘 → 导入经验JSON」入库。`);
+};
+document.getElementById('btnLessonImport').onclick = ()=>{
+  openJsonImport('📥 导入经验 JSON',
+    '粘贴「⧉ 复盘分析指令」让 AI 返回的 JSON 数组，字段：type（加分行为/减分行为/中性观察）、content、source。',
+    data=>{
+      let n = 0;
+      data.forEach(d=>{
+        if(!d || !d.content) return;
+        const type = LESSON_TYPES.includes(d.type) ? d.type : '中性观察';
+        lessons.unshift({id:nextLessonId(), type, content:String(d.content), source:String(d.source||'AI复盘'), tags:[], createdAt:today()});
+        n++;
+      });
+      saveLessons(); renderReview();
+      return n;
+    });
+};
+
+/* ================= 任务看板 ================= */
+const TASK_KEY = 'ai-director-workbench.tasks.v1';
+const TASK_STAGES = ['待办','进行中','已完成'];
+const seedTasks = [
+  {id:1, title:'示例：给「3个运镜提示词」写脚本', src:'✍️ 手动', st:'进行中', createdAt:'2026-07-22'},
+  {id:2, title:'示例：回复抖音评论区置顶问题', src:'✍️ 手动', st:'待办', createdAt:'2026-07-23'}
+];
+function loadTasks(){ try{ const raw=localStorage.getItem(TASK_KEY); if(raw) return JSON.parse(raw); }catch(e){} return null; }
+let tasks = loadTasks() || seedTasks.slice();
+function saveTasks(){ localStorage.setItem(TASK_KEY, JSON.stringify(tasks)); }
+function nextTaskId(){ return tasks.reduce((m,t)=>Math.max(m,t.id),0)+1; }
+
+function renderTasks(){
+  const kb = document.getElementById('taskKanban');
+  kb.innerHTML = TASK_STAGES.map(st=>{
+    const list = tasks.filter(t=>t.st===st);
+    const cards = list.map(t=>`<div class="kb-card" data-tid="${t.id}">
+      <div class="t">${esc(t.title)}</div>
+      <div class="m">${esc(t.src||'✍️ 手动')} · ${esc(t.createdAt||'')}</div>
+      <div class="move-btns">
+        <button data-mv="-1">◀</button>
+        <button data-mv="1">▶</button>
+        <button data-del="1" style="color:#A04343">✕</button>
+      </div>
+    </div>`).join('');
+    return `<div class="kb-col"><div class="kb-head">${st}<span class="n">${list.length}</span></div>${cards || '<div style="font-size:11px;color:var(--muted);padding:6px">空</div>'}</div>`;
+  }).join('');
+  kb.querySelectorAll('[data-mv]').forEach(el=>el.onclick=()=>{
+    const t = tasks.find(x=>x.id===+el.closest('.kb-card').dataset.tid);
+    const i = TASK_STAGES.indexOf(t.st);
+    t.st = TASK_STAGES[Math.min(Math.max(i+(+el.dataset.mv),0),TASK_STAGES.length-1)];
+    saveTasks(); renderTasks();
+  });
+  kb.querySelectorAll('[data-del]').forEach(el=>el.onclick=()=>{
+    tasks = tasks.filter(x=>x.id!==+el.closest('.kb-card').dataset.tid);
+    saveTasks(); renderTasks();
+  });
+  document.getElementById('navTaskCount').textContent = tasks.filter(t=>t.st!=='已完成').length;
+}
+
+function addTask(title, src){
+  tasks.unshift({id:nextTaskId(), title, src:src||'✍️ 手动', st:'待办', createdAt:today()});
+  saveTasks(); renderTasks();
+}
+document.getElementById('taskInput').onkeydown = e=>{
+  if(e.key!=='Enter') return;
+  const v = e.target.value.trim();
+  if(!v) return;
+  addTask(v); e.target.value='';
+};
+document.getElementById('btnTaskSync').onclick = ()=>{
+  let added = 0;
+  const has = title => tasks.some(t=>t.title===title);
+  topics.filter(t=>t.status==='已排产' && !scripts.some(s=>s.topicId===t.id)).forEach(t=>{
+    const title = '写脚本：' + t.title;
+    if(!has(title)){ addTask(title, '⚡ 同步'); added++; }
+  });
+  scripts.filter(s=>s.status==='已完成' && !productions.some(p=>p.scriptId===s.id)).forEach(s=>{
+    const title = '制作：' + s.title;
+    if(!has(title)){ addTask(title, '⚡ 同步'); added++; }
+  });
+  productions.filter(p=>p.stage==='待发布').forEach(p=>{
+    const title = '发布：' + p.title;
+    if(!has(title)){ addTask(title, '⚡ 同步'); added++; }
+  });
+  alert(added ? `已同步 ${added} 条建议任务` : '没有新的建议任务（流水线都在推进中）');
+};
+
+/* ================= 商务合作 ================= */
+const DEAL_KEY = 'ai-director-workbench.deals.v1';
+const DEAL_STAGES = ['接洽中','报价中','执行中','已交付','已结款'];
+const seedDeals = [
+  {id:1, brand:'示例：某某AI视频工具', type:'商单', amount:8000, stage:'报价中', contact:'微信：example_pm', note:'示例数据：想要一期工具测评植入，账期 30 天，需先出脚本大纲', createdAt:'2026-07-20'}
+];
+function loadDeals(){ try{ const raw=localStorage.getItem(DEAL_KEY); if(raw) return JSON.parse(raw); }catch(e){} return null; }
+let deals = loadDeals() || seedDeals.slice();
+function saveDeals(){ localStorage.setItem(DEAL_KEY, JSON.stringify(deals)); }
+function nextDealId(){ return deals.reduce((m,t)=>Math.max(m,t.id),0)+1; }
+let dealQ = '';
+
+function renderDeals(){
+  const talking = deals.filter(d=>d.stage!=='已结款').reduce((s,d)=>s+(+d.amount||0),0);
+  const settled = deals.filter(d=>d.stage==='已结款').reduce((s,d)=>s+(+d.amount||0),0);
+  document.getElementById('dealMetrics').innerHTML = [
+    {v:'¥'+wan(talking), k:'在谈金额（未结款）'},
+    {v:'¥'+wan(settled), k:'已结款金额'},
+    {v:deals.filter(d=>d.stage!=='已结款').length, k:'进行中合作'},
+    {v:deals.length, k:'累计合作单'}
+  ].map(m=>`<div class="metric"><div class="v">${m.v}</div><div class="k">${m.k}</div></div>`).join('');
+
+  const kb = document.getElementById('dealKanban');
+  kb.innerHTML = DEAL_STAGES.map(st=>{
+    const list = deals.filter(d=>d.stage===st && (!dealQ || d.brand.toLowerCase().includes(dealQ)));
+    const cards = list.map(d=>`<div class="kb-card" data-did="${d.id}">
+      <div class="t">${esc(d.brand)}</div>
+      <div class="m">${esc(d.type)}${d.amount?` · ¥${wan(+d.amount)}`:''}<br>${esc(d.createdAt||'')}</div>
+      <div class="move-btns">
+        <button data-mv="-1">◀</button>
+        <button data-mv="1">▶</button>
+      </div>
+    </div>`).join('');
+    return `<div class="kb-col"><div class="kb-head">${st}<span class="n">${list.length}</span></div>${cards || '<div style="font-size:11px;color:var(--muted);padding:6px">空</div>'}</div>`;
+  }).join('');
+  kb.querySelectorAll('.kb-card').forEach(el=>{
+    el.onclick = e=>{ if(e.target.dataset.mv===undefined) openDealModal(+el.dataset.did); };
+  });
+  kb.querySelectorAll('[data-mv]').forEach(el=>el.onclick=()=>{
+    const d = deals.find(x=>x.id===+el.closest('.kb-card').dataset.did);
+    const i = DEAL_STAGES.indexOf(d.stage);
+    d.stage = DEAL_STAGES[Math.min(Math.max(i+(+el.dataset.mv),0),DEAL_STAGES.length-1)];
+    saveDeals(); renderDeals();
+  });
+  document.getElementById('navDealCount').textContent = deals.filter(d=>d.stage!=='已结款').length;
+}
+
+document.getElementById('dealSearch').oninput = e=>{ dealQ = e.target.value.trim().toLowerCase(); renderDeals(); };
+function openDealModal(id){
+  const d = id ? deals.find(x=>x.id===id) : {id:'', brand:'', type:'商单', amount:'', stage:'接洽中', contact:'', note:''};
+  document.getElementById('dId').value = d.id;
+  document.getElementById('dBrand').value = d.brand;
+  document.getElementById('dType').value = d.type;
+  document.getElementById('dAmount').value = d.amount;
+  document.getElementById('dStage').value = d.stage;
+  document.getElementById('dContact').value = d.contact||'';
+  document.getElementById('dNote').value = d.note||'';
+  document.getElementById('dealMask').classList.add('show');
+}
+document.getElementById('btnDealNew').onclick = ()=>openDealModal(null);
+document.getElementById('btnDealCancel').onclick = ()=>document.getElementById('dealMask').classList.remove('show');
+document.getElementById('dealMask').onclick = e=>{ if(e.target.id==='dealMask') e.target.classList.remove('show'); };
+document.getElementById('btnDealSave').onclick = ()=>{
+  const brand = document.getElementById('dBrand').value.trim();
+  if(!brand){ alert('品牌方必填'); return; }
+  const amt = parseInt(document.getElementById('dAmount').value.replace(/[^\d]/g,''),10);
+  const data = {brand, type:document.getElementById('dType').value, amount:isNaN(amt)?0:amt,
+    stage:document.getElementById('dStage').value, contact:document.getElementById('dContact').value.trim(),
+    note:document.getElementById('dNote').value.trim()};
+  const id = document.getElementById('dId').value;
+  if(id){ Object.assign(deals.find(x=>x.id===+id), data); }
+  else deals.unshift(Object.assign({id:nextDealId(), createdAt:today()}, data));
+  saveDeals(); renderDeals();
+  document.getElementById('dealMask').classList.remove('show');
+};
+document.getElementById('btnDealDel').onclick = ()=>{
+  const id = document.getElementById('dId').value;
+  if(!id || !confirm('删除这个合作单？')) return;
+  deals = deals.filter(x=>x.id!==+id);
+  saveDeals(); renderDeals();
+  document.getElementById('dealMask').classList.remove('show');
+};
+
+/* ================= 提示词库 ================= */
+const PR_KEY = 'ai-director-workbench.prompts.v1';
+const PRTOOL_KEY = 'ai-director-workbench.promptTools.v1';
+const PR_TOOLS = ['可灵','即梦','Runway','Veo','Sora','Pika','剪映AI','通用'];
+const PR_CATS = ['运镜','构图','配色','布光','质感','其他'];
+const seedPrompts = [
+  {id:1, title:'电影感缓慢推镜（人物特写）', tool:'通用', cat:'运镜', rate:5,
+   text:'Cinematic slow push-in shot, close-up of the subject\'s face, shallow depth of field, soft natural window light, 35mm film grain, muted teal and orange color grading, photorealistic, 24fps film look',
+   effect:'人物特写稳定出片；大全景/快速运动时容易崩', createdAt:'2026-07-21'},
+  {id:2, title:'环绕运镜展示主体（产品/人物）', tool:'可灵', cat:'运镜', rate:4,
+   text:'Smooth 180-degree orbital camera movement around the subject, subject stays perfectly centered, consistent lighting, cinematic depth of field, high detail, no distortion',
+   effect:'加 "subject stays perfectly centered" 后跑偏明显减少', createdAt:'2026-07-22'},
+  {id:3, title:'橙青电影配色（夜景城市）', tool:'即梦', cat:'配色', rate:4,
+   text:'Night city street scene, teal and orange cinematic color palette, warm tungsten street lights against cool blue shadows, light haze, anamorphic lens flare, movie still quality',
+   effect:'夜景氛围感强；加 "light haze" 是出电影感的关键', createdAt:'2026-07-22'}
+];
+const seedPrTools = [
+  {name:'可灵', goodat:'人物动作、中文语义理解好，运镜稳定', price:'会员制，有免费额度', feel:'示例：图生视频比文生视频稳，提示词别写太长'},
+  {name:'即梦', goodat:'国风/人像美感，出图快', price:'积分制，日常够用', feel:'示例：适合快速出氛围感画面，复杂运镜一般'},
+  {name:'Runway', goodat:'运动笔刷精细控制、镜头语言丰富', price:'订阅制偏贵', feel:'示例：Gen 系列适合做指定区域动效，英文提示词'},
+  {name:'Veo', goodat:'物理真实感、长镜头连贯性', price:'订阅制，需排队', feel:'示例：画面真实度天花板，但要英文长提示词'}
+];
+function loadPrompts(){ try{ const raw=localStorage.getItem(PR_KEY); if(raw) return JSON.parse(raw); }catch(e){} return null; }
+function loadPrTools(){ try{ const raw=localStorage.getItem(PRTOOL_KEY); if(raw) return JSON.parse(raw); }catch(e){} return null; }
+let prompts = loadPrompts() || seedPrompts.slice();
+let prTools = loadPrTools() || seedPrTools.slice();
+function savePrompts(){ localStorage.setItem(PR_KEY, JSON.stringify(prompts)); }
+function savePrTools(){ localStorage.setItem(PRTOOL_KEY, JSON.stringify(prTools)); }
+function nextPromptId(){ return prompts.reduce((m,t)=>Math.max(m,t.id),0)+1; }
+let prToolFilter = '全部', prCatFilter = '全部', prQ = '';
+
+function copyText(text, btn){
+  const done = ()=>{ if(btn){ const o=btn.textContent; btn.textContent='✅ 已复制'; setTimeout(()=>btn.textContent=o,1200); } };
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text, done)); }
+  else fallbackCopy(text, done);
+}
+function fallbackCopy(text, done){
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); }catch(e){}
+  document.body.removeChild(ta); done();
+}
+
+function renderPrompts(){
+  const mkBand = (id, items, cur, counts)=>{
+    const el = document.getElementById(id);
+    let html = `<span class="pill ${cur==='全部'?'active':''}" data-v="全部">全部<span>${prompts.length}</span></span>`;
+    items.forEach(it=>{
+      const n = prompts.filter(p=>(id==='promptToolBand'?p.tool:p.cat)===it).length;
+      if(n>0 || cur===it) html += `<span class="pill ${cur===it?'active':''}" data-v="${it}">${it}<span>${n}</span></span>`;
+    });
+    el.innerHTML = html;
+    el.querySelectorAll('.pill').forEach(p=>p.onclick=()=>{
+      if(id==='promptToolBand') prToolFilter=p.dataset.v; else prCatFilter=p.dataset.v;
+      renderPrompts();
+    });
+  };
+  mkBand('promptToolBand', PR_TOOLS, prToolFilter);
+  mkBand('promptCatBand', PR_CATS, prCatFilter);
+
+  const list = prompts.filter(p=>
+    (prToolFilter==='全部' || p.tool===prToolFilter) &&
+    (prCatFilter==='全部' || p.cat===prCatFilter) &&
+    (!prQ || (p.title+p.text+(p.effect||'')).toLowerCase().includes(prQ))
+  );
+  document.getElementById('promptList').innerHTML = list.map(p=>`<div class="g-card">
+    <div><span class="chip">${esc(p.tool)}</span> <span class="chip neutral">${esc(p.cat)}</span> <span class="rate r${p.rate||3}">${'★'.repeat(+p.rate||0)}</span></div>
+    <div class="t">${esc(p.title)}</div>
+    <div class="d" style="font-family:monospace;font-size:11px;background:#F5F4EA;border-radius:8px;padding:8px">${esc(p.text)}</div>
+    ${p.effect?`<div class="d" style="color:var(--muted)">🧪 ${esc(p.effect)}</div>`:''}
+    <div class="foot"><span class="date">${esc(p.createdAt||'')}</span>
+      <button class="mini-btn" data-copy="${p.id}">📋 复制</button>
+      <button class="mini-btn" data-edit="${p.id}">编辑</button>
+      <button class="mini-btn danger" data-del="${p.id}">删除</button>
+    </div>
+  </div>`).join('') || '<div class="empty">没有匹配的提示词</div>';
+  document.getElementById('promptList').querySelectorAll('[data-copy]').forEach(el=>el.onclick=()=>{
+    const p = prompts.find(x=>x.id===+el.dataset.copy);
+    copyText(p.text, el);
+  });
+  document.getElementById('promptList').querySelectorAll('[data-edit]').forEach(el=>el.onclick=()=>openPrModal(+el.dataset.edit));
+  document.getElementById('promptList').querySelectorAll('[data-del]').forEach(el=>el.onclick=()=>{
+    if(!confirm('删除这条提示词？')) return;
+    prompts = prompts.filter(x=>x.id!==+el.dataset.del);
+    savePrompts(); renderPrompts();
+  });
+
+  document.getElementById('toolTbody').innerHTML = prTools.map((t,i)=>`<tr>
+    <td><input data-f="name" data-i="${i}" value="${esc(t.name)}"></td>
+    <td><input data-f="goodat" data-i="${i}" value="${esc(t.goodat)}"></td>
+    <td><input data-f="price" data-i="${i}" value="${esc(t.price)}"></td>
+    <td><input data-f="feel" data-i="${i}" value="${esc(t.feel)}"></td>
+    <td><button class="mini-btn danger" data-tdel="${i}">✕</button></td>
+  </tr>`).join('');
+  document.getElementById('toolTbody').querySelectorAll('input').forEach(el=>el.onchange=()=>{
+    prTools[+el.dataset.i][el.dataset.f] = el.value;
+    savePrTools();
+  });
+  document.getElementById('toolTbody').querySelectorAll('[data-tdel]').forEach(el=>el.onclick=()=>{
+    prTools.splice(+el.dataset.tdel,1);
+    savePrTools(); renderPrompts();
+  });
+  document.getElementById('navPromptCount').textContent = prompts.length;
+}
+document.getElementById('btnToolAdd').onclick = ()=>{
+  prTools.push({name:'新工具', goodat:'', price:'', feel:''});
+  savePrTools(); renderPrompts();
+};
+document.getElementById('promptSearch').oninput = e=>{ prQ = e.target.value.trim().toLowerCase(); renderPrompts(); };
+
+function openPrModal(id){
+  const p = id ? prompts.find(x=>x.id===id) : {id:'', title:'', text:'', tool:'可灵', cat:'运镜', effect:'', rate:4};
+  document.getElementById('prId').value = p.id;
+  document.getElementById('prTitle').value = p.title;
+  document.getElementById('prText').value = p.text;
+  document.getElementById('prTool').value = p.tool;
+  document.getElementById('prCat').value = p.cat;
+  document.getElementById('prEffect').value = p.effect||'';
+  document.getElementById('prRate').value = p.rate||4;
+  document.getElementById('prMask').classList.add('show');
+}
+document.getElementById('btnPromptNew').onclick = ()=>openPrModal(null);
+document.getElementById('btnPrCancel').onclick = ()=>document.getElementById('prMask').classList.remove('show');
+document.getElementById('prMask').onclick = e=>{ if(e.target.id==='prMask') e.target.classList.remove('show'); };
+document.getElementById('btnPrSave').onclick = ()=>{
+  const title = document.getElementById('prTitle').value.trim();
+  const text = document.getElementById('prText').value.trim();
+  if(!title || !text){ alert('标题和正文必填'); return; }
+  const data = {title, text, tool:document.getElementById('prTool').value, cat:document.getElementById('prCat').value,
+    effect:document.getElementById('prEffect').value.trim(), rate:+document.getElementById('prRate').value};
+  const id = document.getElementById('prId').value;
+  if(id){ Object.assign(prompts.find(x=>x.id===+id), data); }
+  else prompts.unshift(Object.assign({id:nextPromptId(), createdAt:today()}, data));
+  savePrompts(); renderPrompts();
+  document.getElementById('prMask').classList.remove('show');
+};
+document.getElementById('btnPrDel').onclick = ()=>{
+  const id = document.getElementById('prId').value;
+  if(!id || !confirm('删除这条提示词？')) return;
+  prompts = prompts.filter(x=>x.id!==+id);
+  savePrompts(); renderPrompts();
+  document.getElementById('prMask').classList.remove('show');
+};
+
+document.getElementById('btnPromptAi').onclick = ()=>{
+  openPrompt('⧉ 提示词生成指令',
+`你是我的 AI 视频提示词专家。我的账号方向：「AI导演」——教别人用AI做出电影感视频（运镜、构图、配色、布光、质感）。
+
+请围绕【在这里填你要做的画面，比如：夜晚城市街道的电影感推镜】生成 3 条提示词，要求：
+1. 正文用英文（AI视频工具对英文响应更稳），构图/运镜/光线/配色/质感五要素写全
+2. 严格输出 JSON 数组，不要输出其他任何内容：
+[{
+  "title": "中文标题（这条提示词干什么用）",
+  "text": "英文提示词正文",
+  "tool": "可灵/即梦/Runway/Veo/Sora/Pika/剪映AI/通用 选一个",
+  "cat": "运镜/构图/配色/布光/质感/其他 选一个",
+  "effect": "使用建议一句话",
+  "rate": 4
+}]
+
+生成后把 JSON 发给我，我会用工作台「提示词库 → 导入JSON」入库。`);
+};
+document.getElementById('btnPromptImport').onclick = ()=>{
+  openJsonImport('📥 导入提示词 JSON',
+    '粘贴 AI 返回的 JSON 数组，字段：title、text（英文正文）、tool、cat、effect、rate。',
+    data=>{
+      let n = 0;
+      data.forEach(d=>{
+        if(!d || !d.title || !d.text) return;
+        prompts.unshift({id:nextPromptId(), title:String(d.title), text:String(d.text),
+          tool:PR_TOOLS.includes(d.tool)?d.tool:'通用', cat:PR_CATS.includes(d.cat)?d.cat:'其他',
+          effect:String(d.effect||''), rate:Math.min(Math.max(+d.rate||3,1),5), createdAt:today()});
+        n++;
+      });
+      savePrompts(); renderPrompts();
+      return n;
+    });
+};
+
+/* ================= 导演参考库 ================= */
+const REF_KEY = 'ai-director-workbench.refs.v1';
+const REF_TYPES = ['电影','短片','广告','MV','其他'];
+const REF_DIMS = ['构图','运镜','配色','布光','情绪'];
+const seedRefs = [
+  {id:1, title:'银翼杀手2049', type:'电影', dims:['配色','布光'], rate:5,
+   point:'橙青撞色的夜景布光：暖色钨丝灯做前景、冷蓝做远景，人物卡在冷暖交界；拉斯维加斯段全橙雾景是"单色情绪"的教科书',
+   link:'', note:'示例：换成你自己的拉片笔记', createdAt:'2026-07-20'},
+  {id:2, title:'布达佩斯大饭店', type:'电影', dims:['构图'], rate:5,
+   point:'绝对对称构图 + 居中运镜：门框套门框的"画中画"，横移镜头像翻画册；适合AI视频提示词里的 symmetrical composition / centered framing',
+   link:'', note:'示例', createdAt:'2026-07-21'},
+  {id:3, title:'地球之盐', type:'电影', dims:['布光','情绪'], rate:4,
+   point:'黑白摄影的光影层次：大光比下的剪影叙事，人小景大表达敬畏感；对应提示词 high contrast / silhouette / vast landscape',
+   link:'', note:'示例', createdAt:'2026-07-22'}
+];
+function loadRefs(){ try{ const raw=localStorage.getItem(REF_KEY); if(raw) return JSON.parse(raw); }catch(e){} return null; }
+let refs = loadRefs() || seedRefs.slice();
+function saveRefs(){ localStorage.setItem(REF_KEY, JSON.stringify(refs)); }
+function nextRefId(){ return refs.reduce((m,t)=>Math.max(m,t.id),0)+1; }
+let refDimFilter = '全部', refQ = '';
+let refPickedDims = [];
+
+function renderRefs(){
+  const band = document.getElementById('refDimBand');
+  let html = `<span class="pill ${refDimFilter==='全部'?'active':''}" data-v="全部">全部<span>${refs.length}</span></span>`;
+  REF_DIMS.forEach(d=>{
+    const n = refs.filter(r=>(r.dims||[]).includes(d)).length;
+    if(n>0 || refDimFilter===d) html += `<span class="pill ${refDimFilter===d?'active':''}" data-v="${d}">${d}<span>${n}</span></span>`;
+  });
+  band.innerHTML = html;
+  band.querySelectorAll('.pill').forEach(el=>el.onclick=()=>{ refDimFilter=el.dataset.v; renderRefs(); });
+
+  const list = refs.filter(r=>
+    (refDimFilter==='全部' || (r.dims||[]).includes(refDimFilter)) &&
+    (!refQ || (r.title+r.point+(r.note||'')).toLowerCase().includes(refQ))
+  );
+  document.getElementById('refList').innerHTML = list.map(r=>`<div class="g-card">
+    <div><span class="chip">${esc(r.type)}</span> ${(r.dims||[]).map(d=>`<span class="chip neutral">${esc(d)}</span>`).join(' ')} <span class="rate r${r.rate||3}">${'★'.repeat(+r.rate||0)}</span></div>
+    <div class="t">《${esc(r.title)}》</div>
+    <div class="d">${esc(r.point)}</div>
+    ${r.link?`<div class="d" style="color:var(--accent-d);word-break:break-all">🔗 ${esc(r.link)}</div>`:''}
+    ${r.note?`<div class="d" style="color:var(--muted)">${esc(r.note)}</div>`:''}
+    <div class="foot"><span class="date">${esc(r.createdAt||'')}</span>
+      <button class="mini-btn" data-edit="${r.id}">编辑</button>
+      <button class="mini-btn danger" data-del="${r.id}">删除</button>
+    </div>
+  </div>`).join('') || '<div class="empty">没有匹配的参考片</div>';
+  document.getElementById('refList').querySelectorAll('[data-edit]').forEach(el=>el.onclick=()=>openRfModal(+el.dataset.edit));
+  document.getElementById('refList').querySelectorAll('[data-del]').forEach(el=>el.onclick=()=>{
+    if(!confirm('删除这条参考？')) return;
+    refs = refs.filter(x=>x.id!==+el.dataset.del);
+    saveRefs(); renderRefs();
+  });
+  document.getElementById('navRefCount').textContent = refs.length;
+}
+document.getElementById('refSearch').oninput = e=>{ refQ = e.target.value.trim().toLowerCase(); renderRefs(); };
+
+function renderRfDims(){
+  const box = document.getElementById('rfDims');
+  box.innerHTML = REF_DIMS.map(d=>`<span class="t ${refPickedDims.includes(d)?'on':''}" data-d="${d}">${d}</span>`).join('');
+  box.querySelectorAll('.t').forEach(el=>el.onclick=()=>{
+    const d = el.dataset.d;
+    refPickedDims = refPickedDims.includes(d) ? refPickedDims.filter(x=>x!==d) : refPickedDims.concat(d);
+    renderRfDims();
+  });
+}
+function openRfModal(id){
+  const r = id ? refs.find(x=>x.id===id) : {id:'', title:'', type:'电影', dims:[], point:'', link:'', note:'', rate:5};
+  document.getElementById('rfId').value = r.id;
+  document.getElementById('rfTitle').value = r.title;
+  document.getElementById('rfType').value = r.type;
+  refPickedDims = (r.dims||[]).slice();
+  renderRfDims();
+  document.getElementById('rfPoint').value = r.point;
+  document.getElementById('rfLink').value = r.link||'';
+  document.getElementById('rfNote').value = r.note||'';
+  document.getElementById('rfRate').value = r.rate||5;
+  document.getElementById('rfMask').classList.add('show');
+}
+document.getElementById('btnRefNew').onclick = ()=>openRfModal(null);
+document.getElementById('btnRfCancel').onclick = ()=>document.getElementById('rfMask').classList.remove('show');
+document.getElementById('rfMask').onclick = e=>{ if(e.target.id==='rfMask') e.target.classList.remove('show'); };
+document.getElementById('btnRfSave').onclick = ()=>{
+  const title = document.getElementById('rfTitle').value.trim();
+  const point = document.getElementById('rfPoint').value.trim();
+  if(!title || !point){ alert('片名和"拆什么"必填'); return; }
+  const data = {title, point, type:document.getElementById('rfType').value, dims:refPickedDims.slice(),
+    link:document.getElementById('rfLink').value.trim(), note:document.getElementById('rfNote').value.trim(),
+    rate:+document.getElementById('rfRate').value};
+  const id = document.getElementById('rfId').value;
+  if(id){ Object.assign(refs.find(x=>x.id===+id), data); }
+  else refs.unshift(Object.assign({id:nextRefId(), createdAt:today()}, data));
+  saveRefs(); renderRefs();
+  document.getElementById('rfMask').classList.remove('show');
+};
+document.getElementById('btnRfDel').onclick = ()=>{
+  const id = document.getElementById('rfId').value;
+  if(!id || !confirm('删除这条参考？')) return;
+  refs = refs.filter(x=>x.id!==+id);
+  saveRefs(); renderRefs();
+  document.getElementById('rfMask').classList.remove('show');
+};
+
+document.getElementById('btnRefAi').onclick = ()=>{
+  openPrompt('⧉ 拉片拆解指令',
+`你是我的拉片分析师。我的账号方向：「AI导演」——教别人用AI做出电影感视频，我会把电影里的镜头语言翻译成 AI 视频提示词教给观众。
+
+请拆解【在这里填片名/片段，比如：《沙丘2》沙漠段】，聚焦一个最值得学的维度，要求：
+1. 说清楚"具体学什么"——要具体到可以直接翻译成 AI 提示词的程度（构图方式/运镜方式/配色方案/布光逻辑）
+2. 严格输出 JSON 数组，不要输出其他任何内容：
+[{
+  "title": "片名",
+  "type": "电影/短片/广告/MV/其他 选一个",
+  "dims": ["从：构图/运镜/配色/布光/情绪 中选1~2个"],
+  "point": "具体拆什么（含可直接用的英文提示词关键词）",
+  "link": "",
+  "note": "",
+  "rate": 1到5的整数
+}]
+
+生成后把 JSON 发给我，我会用工作台「导演参考库 → 导入JSON」入库。`);
+};
+document.getElementById('btnRefImport').onclick = ()=>{
+  openJsonImport('📥 导入导演参考 JSON',
+    '粘贴 AI 返回的 JSON 数组，字段：title、type、dims（数组）、point、rate。',
+    data=>{
+      let n = 0;
+      data.forEach(d=>{
+        if(!d || !d.title || !d.point) return;
+        refs.unshift({id:nextRefId(), title:String(d.title), type:REF_TYPES.includes(d.type)?d.type:'电影',
+          dims:(Array.isArray(d.dims)?d.dims:[]).filter(x=>REF_DIMS.includes(x)),
+          point:String(d.point), link:String(d.link||''), note:String(d.note||''),
+          rate:Math.min(Math.max(+d.rate||3,1),5), createdAt:today()});
+        n++;
+      });
+      saveRefs(); renderRefs();
+      return n;
+    });
+};
+
+/* ================= 爆款拆解库 ================= */
+const HOT_KEY = 'ai-director-workbench.hots.v1';
+const HOT_PLATS = ['抖音','小红书','B站','视频号','YouTube','其他'];
+const HOT_STS = ['待拆解','已拆解'];
+const seedHots = [
+  {id:1, title:'示例：我用AI复刻了《银翼杀手》的夜景', platform:'B站', author:'示例UP主', link:'https://example.com/1',
+   plays:'88w', hook:'开头直接放成片 vs 原片对比', structure:'对比钩子→工具介绍→逐镜头拆解→提示词放出',
+   why:'复刻名场面自带流量，且展示硬实力', reuse:'我也可以做"AI复刻经典镜头"系列，挂提示词库引流',
+   st:'已拆解', tags:['AI工具','配色'], createdAt:'2026-07-21'},
+  {id:2, title:'示例：3句话让可灵听懂运镜', platform:'抖音', author:'示例博主', link:'https://example.com/2',
+   plays:'210w', hook:'"你的AI视频为什么像监控录像？"灵魂拷问开场', structure:'痛点拷问→错误示范→3句口诀→前后对比',
+   why:'口诀化降低记忆成本，对比画面冲击力强', reuse:'口诀+对比的结构可以直接套用到配色/构图题材',
+   st:'待拆解', tags:['运镜','提示词技巧'], createdAt:'2026-07-22'}
+];
+function loadHots(){ try{ const raw=localStorage.getItem(HOT_KEY); if(raw) return JSON.parse(raw); }catch(e){} return null; }
+let hots = loadHots() || seedHots.slice();
+function saveHots(){ localStorage.setItem(HOT_KEY, JSON.stringify(hots)); }
+function nextHotId(){ return hots.reduce((m,t)=>Math.max(m,t.id),0)+1; }
+let hotStFilter = '全部', hotPlatFilter = '全部', hotQ = '';
+
+function renderHots(){
+  const mkBand = (id, items, cur, keyFn)=>{
+    const el = document.getElementById(id);
+    let html = `<span class="pill ${cur==='全部'?'active':''}" data-v="全部">全部<span>${hots.length}</span></span>`;
+    items.forEach(it=>{
+      const n = hots.filter(keyFn(it)).length;
+      if(n>0 || cur===it) html += `<span class="pill ${cur===it?'active':''}" data-v="${it}">${it}<span>${n}</span></span>`;
+    });
+    el.innerHTML = html;
+    el.querySelectorAll('.pill').forEach(p=>p.onclick=()=>{
+      if(id==='hotStBand') hotStFilter=p.dataset.v; else hotPlatFilter=p.dataset.v;
+      renderHots();
+    });
+  };
+  mkBand('hotStBand', HOT_STS, hotStFilter, it=>h=>h.st===it);
+  mkBand('hotPlatBand', HOT_PLATS, hotPlatFilter, it=>h=>h.platform===it);
+
+  const list = hots.filter(h=>
+    (hotStFilter==='全部' || h.st===hotStFilter) &&
+    (hotPlatFilter==='全部' || h.platform===hotPlatFilter) &&
+    (!hotQ || (h.title+(h.author||'')).toLowerCase().includes(hotQ))
+  );
+  document.getElementById('hotList').innerHTML = list.map(h=>`<div class="g-card">
+    <div><span class="chip">${esc(h.platform)}</span> <span class="chip ${h.st==='已拆解'?'plus':'neutral'}">${esc(h.st)}</span>
+      ${h.plays?`<span class="chip" style="background:#F0E3D9;color:#A04343">▶ ${esc(h.plays)}</span>`:''}
+      ${(h.tags||[]).map(t=>`<span class="chip neutral">${esc(t)}</span>`).join(' ')}</div>
+    <div class="t">${esc(h.title)}</div>
+    ${h.author?`<div class="d" style="color:var(--muted)">@${esc(h.author)}</div>`:''}
+    ${h.hook?`<div class="d">🪝 钩子：${esc(h.hook)}</div>`:''}
+    ${h.structure?`<div class="d">🧱 结构：${esc(h.structure)}</div>`:''}
+    ${h.why?`<div class="d">💥 爆点：${esc(h.why)}</div>`:''}
+    ${h.reuse?`<div class="d" style="color:var(--accent-d)">♻️ 复用：${esc(h.reuse)}</div>`:''}
+    ${h.link?`<div class="d" style="color:var(--muted);word-break:break-all;font-size:11px">🔗 ${esc(h.link)}</div>`:''}
+    <div class="foot"><span class="date">${esc(h.createdAt||'')}</span>
+      <button class="mini-btn" data-topic="${h.id}">🎯 转选题</button>
+      <button class="mini-btn" data-edit="${h.id}">编辑</button>
+      <button class="mini-btn danger" data-del="${h.id}">删除</button>
+    </div>
+  </div>`).join('') || '<div class="empty">没有匹配的爆款，刷到爆款就录进来</div>';
+  document.getElementById('hotList').querySelectorAll('[data-topic]').forEach(el=>el.onclick=()=>{
+    const h = hots.find(x=>x.id===+el.dataset.topic);
+    topics.unshift({id:nextId(), title:h.title.replace(/^示例：/,''), angle:h.reuse||h.why||'',
+      source:'🔥 爆款拆解', tags:(h.tags||[]).slice(0,2), pain:3, audience:3, appeal:3, difficulty:3,
+      status:'待定', note:`爆款参考：${h.link||'无链接'}（@${h.author||'佚名'} ${h.plays||''}）`, createdAt:today()});
+    save(); renderAll();
+    el.textContent = '✅ 已转选题';
+    setTimeout(()=>{ el.textContent = '🎯 转选题'; }, 1500);
+  });
+  document.getElementById('hotList').querySelectorAll('[data-edit]').forEach(el=>el.onclick=()=>openHtModal(+el.dataset.edit));
+  document.getElementById('hotList').querySelectorAll('[data-del]').forEach(el=>el.onclick=()=>{
+    if(!confirm('删除这条拆解？')) return;
+    hots = hots.filter(x=>x.id!==+el.dataset.del);
+    saveHots(); renderHots();
+  });
+  document.getElementById('navHotCount').textContent = hots.length;
+}
+document.getElementById('hotSearch').oninput = e=>{ hotQ = e.target.value.trim().toLowerCase(); renderHots(); };
+
+function openHtModal(id){
+  const h = id ? hots.find(x=>x.id===id) : {id:'', title:'', platform:'抖音', author:'', link:'', plays:'', hook:'', structure:'', why:'', reuse:'', st:'待拆解'};
+  document.getElementById('htId').value = h.id;
+  document.getElementById('htTitle').value = h.title;
+  document.getElementById('htPlat').value = h.platform;
+  document.getElementById('htAuthor').value = h.author||'';
+  document.getElementById('htPlays').value = h.plays||'';
+  document.getElementById('htLink').value = h.link||'';
+  document.getElementById('htHook').value = h.hook||'';
+  document.getElementById('htStructure').value = h.structure||'';
+  document.getElementById('htWhy').value = h.why||'';
+  document.getElementById('htReuse').value = h.reuse||'';
+  document.getElementById('htSt').value = h.st||'待拆解';
+  document.getElementById('htMask').classList.add('show');
+}
+document.getElementById('btnHotNew').onclick = ()=>openHtModal(null);
+document.getElementById('btnHtCancel').onclick = ()=>document.getElementById('htMask').classList.remove('show');
+document.getElementById('htMask').onclick = e=>{ if(e.target.id==='htMask') e.target.classList.remove('show'); };
+document.getElementById('btnHtSave').onclick = ()=>{
+  const title = document.getElementById('htTitle').value.trim();
+  if(!title){ alert('标题必填'); return; }
+  const id = document.getElementById('htId').value;
+  const data = {title, platform:document.getElementById('htPlat').value, author:document.getElementById('htAuthor').value.trim(),
+    plays:document.getElementById('htPlays').value.trim(), link:document.getElementById('htLink').value.trim(),
+    hook:document.getElementById('htHook').value.trim(), structure:document.getElementById('htStructure').value.trim(),
+    why:document.getElementById('htWhy').value.trim(), reuse:document.getElementById('htReuse').value.trim(),
+    st:document.getElementById('htSt').value};
+  if(id){ Object.assign(hots.find(x=>x.id===+id), data); }
+  else hots.unshift(Object.assign({id:nextHotId(), tags:[], createdAt:today()}, data));
+  saveHots(); renderHots();
+  document.getElementById('htMask').classList.remove('show');
+};
+document.getElementById('btnHtDel').onclick = ()=>{
+  const id = document.getElementById('htId').value;
+  if(!id || !confirm('删除这条拆解？')) return;
+  hots = hots.filter(x=>x.id!==+id);
+  saveHots(); renderHots();
+  document.getElementById('htMask').classList.remove('show');
+};
+
+document.getElementById('btnHotAi').onclick = ()=>{
+  openPrompt('⧉ 爆款拆解指令',
+`你是我的爆款视频拆解师。我的账号方向：「AI导演」——教别人用AI做出电影感视频（运镜、构图、配色、布光、AI工具、提示词技巧）。
+
+我要拆解这条爆款视频：
+【在这里粘贴视频链接，或者描述视频内容/台词】
+
+请你（能联网就联网看，看不了就根据我描述的内容推）：
+1. 拆出它的钩子（开头3秒怎么抓人）、结构（段落排布）、爆点（为什么爆）
+2. 告诉我"可复用点"：我怎么把这个套路用到「AI导演」的选题上
+3. 严格输出 JSON 数组，不要输出其他任何内容：
+[{
+  "title": "爆款标题",
+  "platform": "抖音/小红书/B站/视频号/YouTube/其他 选一个",
+  "author": "作者名",
+  "link": "链接",
+  "plays": "数据档，如 210w",
+  "hook": "钩子一句话",
+  "structure": "结构一句话",
+  "why": "爆点一句话",
+  "reuse": "可复用点一句话",
+  "st": "已拆解",
+  "tags": ["从：电影质感/运镜/构图/配色/布光/提示词技巧/AI工具/剪辑/账号运营 中选1~2个"]
+}]
+
+生成后把 JSON 发给我，我会用工作台「爆款拆解库 → 导入JSON」入库。`);
+};
+document.getElementById('btnHotImport').onclick = ()=>{
+  openJsonImport('📥 导入爆款拆解 JSON',
+    '粘贴 AI 返回的 JSON 数组，字段：title、platform、author、link、plays、hook、structure、why、reuse、st、tags。',
+    data=>{
+      let n = 0;
+      data.forEach(d=>{
+        if(!d || !d.title) return;
+        hots.unshift({id:nextHotId(), title:String(d.title),
+          platform:HOT_PLATS.includes(d.platform)?d.platform:'其他',
+          author:String(d.author||''), link:String(d.link||''), plays:String(d.plays||''),
+          hook:String(d.hook||''), structure:String(d.structure||''), why:String(d.why||''), reuse:String(d.reuse||''),
+          st:HOT_STS.includes(d.st)?d.st:'已拆解',
+          tags:(Array.isArray(d.tags)?d.tags:[]).filter(t=>PRESET_TAGS.includes(t)).slice(0,2),
+          createdAt:today()});
+        n++;
+      });
+      saveHots(); renderHots();
+      return n;
+    });
+};
+
+/* ================= 模块切换 ================= */
+const VIEWS = { '选题库':'viewTopics', '灵感速记':'viewIdeas', '脚本写作室':'viewScripts', '制作与发布':'viewProd', '数据复盘':'viewReview', '提示词库':'viewPrompts', '导演参考库':'viewRef', '爆款拆解库':'viewHot', '任务看板':'viewTasks', '商务合作':'viewDeals' };
+const HASH2MOD = { topics:'选题库', ideas:'灵感速记', scripts:'脚本写作室', prod:'制作与发布', review:'数据复盘', prompts:'提示词库', ref:'导演参考库', hot:'爆款拆解库', tasks:'任务看板', deals:'商务合作' };
+const MOD2HASH = { '选题库':'topics', '灵感速记':'ideas', '脚本写作室':'scripts', '制作与发布':'prod', '数据复盘':'review', '提示词库':'prompts', '导演参考库':'ref', '爆款拆解库':'hot', '任务看板':'tasks', '商务合作':'deals' };
+const ALL_VIEWS = ['viewTopics','viewIdeas','viewScripts','viewProd','viewReview','viewPrompts','viewRef','viewHot','viewTasks','viewDeals','viewPlaceholder'];
+function showModule(mod, updateHash = true){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.mod===mod));
+  ALL_VIEWS.forEach(v=>{ const el=document.getElementById(v); if(el) el.style.display='none'; });
+  if(VIEWS[mod]){
+    document.getElementById(VIEWS[mod]).style.display = '';
+  } else {
+    document.getElementById('viewPlaceholder').style.display = 'block';
+    document.getElementById('phTitle').textContent = '「' + mod + '」模块规划中';
+  }
+  if(updateHash) location.hash = MOD2HASH[mod] || '';
+}
+document.querySelectorAll('.nav-item').forEach(el=>{ el.onclick = ()=>showModule(el.dataset.mod); });
+function routeFromHash(){
+  const h = location.hash.replace('#','');
+  if(HASH2MOD[h]) showModule(HASH2MOD[h], false);
+  if(h==='scripts' && !currentScriptId && scripts.length) openScript(scripts[0].id);
+}
+window.addEventListener('hashchange', routeFromHash);
+
+/* ================= 导演雷达 ================= */
+/* 数据来自 radar-data.js（window.RADAR_DATA），由每日采集任务自动重写；页面本身不联网。
+   处理状态（转选题/收藏/忽略）按条目 id 存 localStorage，换批数据后自动失效。 */
+const RADAR_STATE_KEY = 'ai-director-workbench.radarState.v1';
+const RADAR_CATS = [
+  {key:'hot',   icon:'📈', name:'热点风向', desc:'漫剧短剧动态、平台趋势、工具新能力——知道发生了什么'},
+  {key:'learn', icon:'📖', name:'技法学习', desc:'运镜 / 构图 / 配色 / 布光 / 提示词的新技法——每天学两手'},
+  {key:'case',  icon:'🔥', name:'爆款拆解', desc:'值得拉片的爆款案例——抄作业，变成自己的选题'}
+];
+function loadRadarState(){ try{ const raw=localStorage.getItem(RADAR_STATE_KEY); if(raw) return JSON.parse(raw); }catch(e){} return {}; }
+let radarState = loadRadarState();
+function saveRadarState(){ localStorage.setItem(RADAR_STATE_KEY, JSON.stringify(radarState)); }
+let radarItems = (window.RADAR_DATA && window.RADAR_DATA.items ? window.RADAR_DATA.items : []).filter(i=>radarState[i.id]!=='skip');
+radarItems.forEach(i=>{ i.st = radarState[i.id]||''; });
+const radarUpdatedAt = (window.RADAR_DATA && window.RADAR_DATA.updatedAt) || '';
+let radarCat = null, radarOpenId = null, radarPickId = null;
+
+function radarPending(catKey){ return radarItems.filter(i=>i.cat===catKey && !i.st); }
+function setRadarState(id, st){ radarState[id]=st; saveRadarState(); const it=radarItems.find(x=>x.id===id); if(it) it.st=st; }
+
+function renderRadar(){
+  const box = document.getElementById('catCards');
+  document.getElementById('radarMeta').textContent = radarUpdatedAt ? radarUpdatedAt+' 更新' : '暂无数据';
+  if(!radarItems.length){
+    box.innerHTML = '<div class="radar-empty">这一批雷达内容都处理完了 ✅<br>下一批每天早 8 点自动更新</div>';
+    return;
+  }
+  box.innerHTML = RADAR_CATS.map(c=>{
+    const list = radarPending(c.key);
+    const latest = list[0];
+    return `<div class="ccard" data-cat="${c.key}">
+      <div class="ccard-top">
+        <span class="ccard-ico">${c.icon}</span>
+        <span class="ccard-name">${c.name}</span>
+        <span class="ccard-badge ${list.length?'':'zero'}">${list.length ? '🔵 '+list.length+' 条' : '✓ 已扫完'}</span>
+      </div>
+      <div class="ccard-desc">${c.desc}</div>
+      ${latest?`<div class="ccard-prev">最新：${esc(latest.title)}</div>`:'<div class="ccard-prev">—</div>'}
+    </div>`;
+  }).join('');
+  box.querySelectorAll('.ccard').forEach(el=>el.onclick=()=>openRadarModal(el.dataset.cat));
+}
+
+function openRadarModal(catKey){
+  radarCat = catKey; radarOpenId = null; radarPickId = null;
+  const c = RADAR_CATS.find(x=>x.key===catKey);
+  document.getElementById('radarMTitle').textContent = c.icon + ' ' + c.name;
+  renderRadarList();
+  document.getElementById('radarMask').classList.add('show');
+}
+function closeRadarModal(){ document.getElementById('radarMask').classList.remove('show'); radarCat = null; }
+
+function radarSeriesOptions(sel){
+  return '<option value="">📦 暂不归集（单篇）</option>' +
+    seriesList.map(s=>`<option value="${s.id}" ${sel===s.id?'selected':''}>📚 ${esc(s.name)}</option>`).join('') +
+    '<option value="__new">＋ 新建合集…</option>';
+}
+
+function renderRadarList(){
+  const list = radarItems.filter(i=>i.cat===radarCat);
+  document.getElementById('radarMMeta').textContent = `${radarUpdatedAt?radarUpdatedAt+' 更新 · ':''}待处理 ${radarPending(radarCat).length} / ${list.length} 条`;
+  const mList = document.getElementById('radarMList');
+  if(!list.length){ mList.innerHTML = '<div class="rmodal-empty">这批都处理完了 ✅</div>'; return; }
+  mList.innerHTML = list.map(i=>{
+    const state = i.st==='topic' ? '<span class="ritem-state">✅ 已转选题</span>'
+               : i.st==='ref'   ? '<span class="ritem-state">📥 已收藏</span>' : '';
+    return `<div class="ritem ${radarOpenId===i.id?'open':''}" data-id="${i.id}">
+      <div class="ritem-head" data-toggle="${i.id}">
+        ${i.tag?`<span class="ritem-tag">${esc(i.tag)}</span>`:''}
+        <div class="ritem-title">${esc(i.title)}</div>
+        ${state}
+        ${i.ev?`<span class="ritem-ev">${esc(i.ev)}</span>`:''}
+        <span class="ritem-src">${esc(i.srcName)} · ${esc(i.date)}</span>
+        <span class="ritem-chev">▾</span>
+      </div>
+      <div class="ritem-body">
+        <div class="ritem-learn"><b>📖 学什么：</b>${esc(i.learn)}</div>
+        ${i.promptText?`<div class="ritem-prompt"><span class="ritem-prompt-text">${esc(i.promptText)}</span><button class="mini-btn" data-copy="${i.id}">⧉ 复制</button></div>`:''}
+        <div class="ritem-angle">💡 选题角度：${esc(i.angle)}</div>
+        <div class="ritem-foot">
+          <a class="ritem-link" href="${esc(i.link)}" target="_blank">🔗 查看原文（${esc(i.srcName)}）</a>
+          ${radarPickId===i.id
+            ? `<div class="r-pick">
+                <select data-picksel="${i.id}">${radarSeriesOptions()}</select>
+                <button class="mini-btn" data-act="topicOk" data-id="${i.id}">确认</button>
+                <button class="mini-btn plain" data-act="topicCancel" data-id="${i.id}">取消</button>
+              </div>`
+            : `<div class="ritem-acts">
+                ${i.st!=='topic' ? `<button class="mini-btn" data-act="topic" data-id="${i.id}">🎯 转选题</button>` : ''}
+                ${i.st!=='ref'   ? `<button class="mini-btn" data-act="ref" data-id="${i.id}">📥 收进参考库</button>` : ''}
+                <button class="mini-btn plain" data-act="skip" data-id="${i.id}">× 忽略</button>
+              </div>`}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  mList.querySelectorAll('[data-toggle]').forEach(el=>el.onclick=()=>{
+    const id = +el.dataset.toggle;
+    radarOpenId = (radarOpenId===id) ? null : id;   // 手风琴：同刻只开一条
+    radarPickId = null;
+    renderRadarList();
+  });
+  mList.querySelectorAll('[data-act]').forEach(el=>el.onclick=e=>{
+    e.stopPropagation();
+    const id = +el.dataset.id, act = el.dataset.act;
+    const it = radarItems.find(x=>x.id===id);
+    if(act==='skip'){
+      radarState[id]='skip'; saveRadarState();
+      radarItems = radarItems.filter(x=>x.id!==id);
+      if(radarOpenId===id) radarOpenId=null;
+    }
+    if(act==='topic'){ radarPickId = id; }
+    if(act==='topicCancel'){ radarPickId = null; }
+    if(act==='topicOk'){
+      const sel = mList.querySelector(`[data-picksel="${id}"]`);
+      const v = sel ? sel.value : '';
+      const sid = v && v!=='__new' ? +v : null;
+      topics.unshift({id:nextId(), title:it.title, angle:it.angle, source:'📡 导演雷达', tags:[],
+        status:'待定', note: it.link ? `原文：${it.link}` : '', seriesId:sid, ep: sid?nextEp(sid):null, createdAt:today()});
+      save(); renderAll();
+      radarPickId = null;
+      setRadarState(id, 'topic');
+    }
+    if(act==='ref'){
+      refs.unshift({id:nextRefId(), title:it.title, type:'其他',
+        dims:REF_DIMS.filter(d=>(it.tag||'').includes(d)),
+        point:it.learn, link:it.link||'', note:'选题角度：'+it.angle, rate:3, createdAt:today()});
+      saveRefs(); renderRefs();
+      setRadarState(id, 'ref');
+    }
+    renderRadarList(); renderRadar();
+  });
+  mList.querySelectorAll('[data-copy]').forEach(el=>el.onclick=e=>{
+    e.stopPropagation();
+    const it = radarItems.find(x=>x.id===+el.dataset.copy);
+    if(it && it.promptText) copyText(it.promptText, el);
+  });
+  mList.querySelectorAll('[data-picksel]').forEach(el=>el.onchange=()=>{
+    if(el.value!=='__new') return;
+    const name = prompt('新合集的名字（建议和抖音上的合集名保持一致）：');
+    if(name && name.trim()){
+      const s = {id:nextSeriesId(), name:name.trim(), desc:'', status:'更新中', createdAt:today()};
+      seriesList.push(s); saveSeries(); renderAll();
+      el.innerHTML = radarSeriesOptions(s.id);
+    } else {
+      el.innerHTML = radarSeriesOptions();
+    }
+  });
+}
+
+document.getElementById('radarMClose').onclick = closeRadarModal;
+document.getElementById('radarMask').onclick = e=>{ if(e.target.id==='radarMask') closeRadarModal(); };
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && radarCat) closeRadarModal(); });
+
+/* ================= 启动 ================= */
+renderAll();
+renderIdeas();
+renderScripts();
+renderProds();
+renderReview();
+renderTasks();
+renderDeals();
+renderPrompts();
+renderRefs();
+renderHots();
+renderRadar();
+obsInit();
+bkInit();
+routeFromHash();
+// 雷达调试钩子：#topics&cat=0&open=9 直接打开对应弹窗（截图验收用）
+const _rmc = location.hash.match(/cat=(\d)/), _rmo = location.hash.match(/open=(\d+)/);
+if(_rmc){ const c = RADAR_CATS[+_rmc[1]]; if(c){ openRadarModal(c.key); if(_rmo){ radarOpenId = +_rmo[1]; renderRadarList(); } } }
+</script>
+</body>
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>导演雷达 · 交互原型 v2（可点击）</title>
+<style>
+  :root{
+    --bg:#F1F0E6; --side:#E9E8DA; --panel:#FBFAF3; --ink:#34362A; --muted:#8B8C7A;
+    --accent:#6C7D47; --accent-d:#55643A; --line:#DFDECE;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI","Microsoft YaHei",sans-serif}
+  body{display:flex;background:var(--bg);color:var(--ink);font-size:14px;min-height:100vh}
+  button{cursor:pointer;font-family:inherit}
+  a{text-decoration:none;color:inherit}
+  /* 侧边栏（示意） */
+  .sidebar{width:250px;background:var(--side);padding:18px 14px;flex-shrink:0;position:sticky;top:0;height:100vh}
+  .logo{display:flex;gap:10px;align-items:center;padding:4px 8px 16px}
+  .logo-badge{width:40px;height:40px;background:var(--accent);color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700}
+  .logo-title{font-weight:700;font-size:15px}
+  .logo-sub{font-size:10px;color:var(--muted);letter-spacing:2px}
+  .nav-item{display:flex;gap:10px;align-items:center;padding:9px 12px;border-radius:12px;font-size:14px;color:#4A4C3E}
+  .nav-item.active{background:var(--accent);color:#fff}
+  .nav-item.dim{opacity:.55}
+  /* 主区 */
+  main{flex:1;padding:20px 26px;max-width:1150px}
+  .page-head{margin-bottom:14px}
+  .page-title{font-size:20px;font-weight:700}
+  .page-desc{font-size:12px;color:var(--muted);margin-top:3px}
+
+  /* ===== 导演雷达：第一层 分类卡 ===== */
+  .radar{background:var(--panel);border-radius:16px;box-shadow:0 2px 10px rgba(80,80,50,.07);margin-bottom:18px;padding:14px 16px 16px}
+  .radar-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .radar-title{font-size:15px;font-weight:700}
+  .radar-meta{font-size:11px;color:var(--muted)}
+  .radar-tip{margin-left:auto;font-size:11px;color:var(--muted)}
+  .cat-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .ccard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 15px 12px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:7px}
+  .ccard:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 16px rgba(90,90,50,.10)}
+  .ccard-top{display:flex;align-items:center;gap:8px}
+  .ccard-ico{font-size:19px}
+  .ccard-name{font-size:14px;font-weight:600}
+  .ccard-badge{margin-left:auto;font-size:11px;color:var(--accent-d);background:#EFF0E2;border-radius:10px;padding:2px 9px}
+  .ccard-badge.zero{color:var(--muted);background:#F0F0E8}
+  .ccard-desc{font-size:11px;color:var(--muted);line-height:1.5}
+  .ccard-prev{font-size:11.5px;color:#5A5C4C;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;border-top:1px dashed var(--line);padding-top:7px}
+
+  /* ===== 第二层：模态列表弹窗 ===== */
+  .mask{position:fixed;inset:0;background:rgba(60,60,40,.42);display:none;align-items:center;justify-content:center;z-index:50}
+  .mask.show{display:flex}
+  .modal{background:var(--panel);border-radius:18px;width:680px;max-width:94vw;max-height:84vh;display:flex;flex-direction:column;box-shadow:0 16px 50px rgba(60,60,40,.30);overflow:hidden}
+  .modal-head{display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line);flex-shrink:0}
+  .modal-title{font-size:15px;font-weight:700}
+  .modal-meta{font-size:11px;color:var(--muted)}
+  .modal-close{margin-left:auto;border:1px solid var(--line);background:#fff;border-radius:10px;width:28px;height:28px;font-size:13px;color:var(--muted)}
+  .modal-close:hover{color:var(--ink);border-color:var(--accent)}
+  .modal-list{overflow-y:auto;padding:10px 14px 14px}
+  .modal-list::-webkit-scrollbar{width:8px}
+  .modal-list::-webkit-scrollbar-thumb{background:#CFD1B8;border-radius:4px}
+
+  /* 列表行：纯标题 + 小标签 + 来源日期 */
+  .ritem{border:1px solid var(--line);border-radius:13px;background:#fff;margin-bottom:8px;overflow:hidden;transition:border-color .15s}
+  .ritem:hover{border-color:#C9CBAE}
+  .ritem-head{display:flex;align-items:center;gap:8px;padding:11px 13px;cursor:pointer;user-select:none}
+  .ritem-tag{font-size:10px;border-radius:8px;padding:2px 7px;flex-shrink:0;background:#EFF0E2;color:var(--accent-d)}
+  .ritem-title{font-size:13.5px;font-weight:600;flex:1;line-height:1.45}
+  .ritem-state{font-size:10px;border-radius:8px;padding:2px 7px;flex-shrink:0;color:var(--accent-d);background:#EFF0E2}
+  .ritem-src{font-size:11px;color:var(--muted);white-space:nowrap;flex-shrink:0}
+  .ritem-chev{font-size:11px;color:var(--muted);transition:transform .18s;flex-shrink:0}
+  .ritem.open .ritem-chev{transform:rotate(180deg)}
+  .ritem.open{border-color:var(--accent)}
+  /* 第三层：行内展开 */
+  .ritem-body{display:none;padding:0 13px 12px;border-top:1px dashed var(--line)}
+  .ritem.open .ritem-body{display:block}
+  .ritem-learn{font-size:12.5px;color:#4E5040;line-height:1.75;padding:10px 0 8px}
+  .ritem-learn b{color:var(--ink)}
+  .ritem-angle{font-size:12px;color:var(--accent-d);background:#EFF0E2;border-radius:10px;padding:7px 11px;line-height:1.6;margin-bottom:9px}
+  .ritem-foot{display:flex;align-items:center;gap:7px}
+  .ritem-link{font-size:11px;color:var(--muted)}
+  .ritem-link:hover{color:var(--accent-d);text-decoration:underline}
+  .ritem-acts{margin-left:auto;display:flex;gap:6px}
+  .mini-btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:4px 11px;font-size:12px;color:var(--accent-d)}
+  .mini-btn:hover{border-color:var(--accent)}
+  .mini-btn.plain{color:var(--muted)}
+  .modal-empty{text-align:center;color:var(--muted);font-size:13px;padding:38px 0}
+
+  /* 现有选题区（示意） */
+  .search-row{display:flex;gap:10px;margin-bottom:12px;opacity:.75}
+  .search-row input{flex:1;border:1px solid var(--line);background:#fff;border-radius:20px;padding:10px 18px;font-size:13px;outline:none}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:14px;padding:8px 16px;font-size:13px}
+  .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .old-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;opacity:.45;filter:saturate(.6)}
+  .old-card{background:var(--panel);border-radius:16px;padding:14px 16px;box-shadow:0 2px 10px rgba(80,80,50,.07);font-size:13px;line-height:1.6}
+  .old-card b{display:block;font-size:14px;margin-bottom:4px}
+  .old-card .m{font-size:11px;color:var(--muted);margin-top:8px}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="logo"><div class="logo-badge">导</div><div><div class="logo-title">AI导演工作台</div><div class="logo-sub">DIRECTOR STUDIO</div></div></div>
+  <div class="nav-item dim">💡 灵感速记</div>
+  <div class="nav-item active">🎯 选题库</div>
+  <div class="nav-item dim">✍️ 脚本写作室</div>
+  <div class="nav-item dim">🎬 制作与发布</div>
+  <div class="nav-item dim">📊 数据复盘</div>
+</aside>
+<main>
+  <div class="page-head">
+    <div class="page-title">🎯 选题库</div>
+    <div class="page-desc">先看导演雷达捡线索，看中的一键转选题</div>
+  </div>
+
+  <!-- ===== 第一层：导演雷达 · 分类卡 ===== -->
+  <div class="radar">
+    <div class="radar-head">
+      <span class="radar-title">📡 导演雷达</span>
+      <span class="radar-meta">07-26 08:03 更新</span>
+      <span class="radar-tip">每天 10 分钟：学一个新技法，捡一个新选题</span>
+    </div>
+    <div class="cat-cards" id="catCards"></div>
+  </div>
+
+  <!-- ===== 现有选题区（示意） ===== -->
+  <div class="search-row">
+    <input placeholder="🔍 搜索选题 / 切入角度 / 标签...">
+    <button class="btn btn-primary">+ 新建选题</button>
+  </div>
+  <div class="old-cards">
+    <div class="old-card"><b>3个运镜提示词，让AI视频秒变电影感</b>新手最容易出效果的推/拉/环绕运镜，附现成提示词模板<div class="m">已排产 · 2026-07-20</div></div>
+    <div class="old-card"><b>可灵 vs 即梦：人像特写运镜实测对比</b>同一段提示词喂给两个工具，直出画质和运镜稳定性实测<div class="m">待定 · 2026-07-21</div></div>
+    <div class="old-card"><b>电影感配色公式：橙青色调怎么写给AI</b>把调色师术语翻译成AI听得懂的提示词<div class="m">待定 · 2026-07-22</div></div>
+  </div>
+</main>
+
+<!-- ===== 第二层：列表弹窗 ===== -->
+<div class="mask" id="radarMask">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="mTitle"></span>
+      <span class="modal-meta" id="mMeta"></span>
+      <button class="modal-close" id="mClose">✕</button>
+    </div>
+    <div class="modal-list" id="mList"></div>
+  </div>
+</div>
+
+<script>
+/* ============ 示例数据（真实数据以后由定时任务写入） ============ */
+const CATS = [
+  {key:'hot',   icon:'📈', name:'热点风向', desc:'漫剧短剧动态、平台趋势、工具新能力——知道发生了什么'},
+  {key:'learn', icon:'📖', name:'技法学习', desc:'运镜 / 构图 / 配色 / 布光 / 提示词的新技法——每天学两手'},
+  {key:'case',  icon:'🔥', name:'爆款拆解', desc:'值得拉片的爆款案例——抄作业，变成自己的选题'}
+];
+let items = [
+  /* ----- 📈 热点风向 ----- */
+  {id:1, cat:'hot', tag:'🎬 漫剧', title:'AI 漫剧单集播放破千万：固定角色 + 3 秒强冲突成爆款公式', srcName:'抖音', date:'07-25', link:'https://www.douyin.com',
+   learn:'爆款漫剧的共同结构 = 固定角色 + 前 3 秒强冲突；观众追的是"人设"，不是画面多精致。开集第一句台词必须是冲突句。',
+   angle:'"零基础做 AI 漫剧"系列第 1 集：爆款结构公式拆解', st:''},
+  {id:2, cat:'hot', tag:'🛠 工具', title:'可灵上线"角色一致性"：一张图锁定全片主角形象', srcName:'可灵官方', date:'07-25', link:'https://klingai.com',
+   learn:'上传一张角色图即可全片保持形象一致，漫剧最大痛点被解决；搭配多角度角色图（正/侧/背）效果更稳。',
+   angle:'实测"角色一致性"：漫剧连载从此能不能立住主角', st:''},
+  {id:3, cat:'hot', tag:'📺 短剧', title:'短剧平台批量采购 AI 短剧：单部报价曝光，成本仅实拍 1/10', srcName:'36氪', date:'07-24', link:'https://www.36kr.com',
+   learn:'平台采购标准集中在两点：单集 90 秒内、强钩子开场；AI 短剧成本约为实拍 1/10，个人创作者也能接单。',
+   angle:'"AI 短剧能赚钱吗"实测拆解：成本、报价、入门路径', st:''},
+  {id:4, cat:'hot', tag:'🛠 工具', title:'即梦"分镜一键成片"实测：运镜偏保守，但这两个用法真香', srcName:'B站', date:'07-23', link:'https://www.bilibili.com',
+   learn:'输入分镜表自动生成连贯短片，但实测运镜偏保守；配合手动指定运镜提示词，效果提升明显。',
+   angle:'实测"分镜一键成片"：能不能替代手写分镜表', st:''},
+  {id:5, cat:'hot', tag:'🎬 漫剧', title:'抖音给 AI 漫剧开专属流量池：新号前 5 条有冷启动扶持', srcName:'新榜', date:'07-23', link:'https://www.newrank.cn',
+   learn:'新账号前 5 条漫剧内容有额外流量扶持；平台判断标准 = 角色一致性 + 连载频率，日更号加权明显。',
+   angle:'"漫剧起号窗口期"分析：现在入场怎么做前 5 条', st:''},
+  {id:6, cat:'hot', tag:'🛠 工具', title:'Runway Gen-4 更新：人物口型同步开放，口播类内容要变天', srcName:'Runway 官方', date:'07-22', link:'https://runwayml.com',
+   learn:'上传人像 + 音频即可生成对口型视频，中文发音适配已可用；停顿和气息仍有机械感，适合 30 秒内短句。',
+   angle:'AI 口型同步实测：口播博主会被取代吗', st:''},
+  {id:7, cat:'hot', tag:'📰 行业', title:'"AI 短剧编剧"岗位悄然出现：会写分镜表的人最先吃到红利', srcName:'机器之心', date:'07-22', link:'https://www.jiqizhixin.com',
+   learn:'多个 MCN 开始招 AI 短剧编剧，核心要求不是文笔，而是分镜能力 + 提示词能力；报价按集结算。',
+   angle:'给观众指条路：学会导演思维能去哪变现', st:''},
+  {id:8, cat:'hot', tag:'📺 短剧', title:'视频号内测"AI 短剧连载"功能：追更日历直接挂在主页', srcName:'IT之家', date:'07-21', link:'https://www.ithome.com',
+   learn:'连载功能支持按集更新 + 更新提醒，官方明显在抢短剧创作者；目前仅对部分账号开放。',
+   angle:'视频号短剧连载值不值得提前布局', st:''},
+
+  /* ----- 📖 技法学习 ----- */
+  {id:9, cat:'learn', tag:'🎥 运镜', title:'"推轨变焦"一句提示词出电影感：变焦和运镜方向必须相反', srcName:'抖音', date:'07-25', link:'https://www.douyin.com',
+   learn:'句式 "camera dollies in while zooming out"——主体不动、背景压缩，制造不安感；反过来写（dolly out + zoom in）就是释怀感。关键：变焦方向和运镜方向必须相反。',
+   angle:'做一条"1 分钟学会希区柯克变焦"，两种情绪写法都给', st:''},
+  {id:10, cat:'learn', tag:'🎥 运镜', title:'"环绕 + 慢动作 + 低机位"：英雄式出场三要素写法公开', srcName:'B站', date:'07-24', link:'https://www.bilibili.com',
+   learn:'orbit shot + slow motion 组合写在一起，AI 会自动保持主体居中环绕；人物出场镜头加 low angle，气场翻倍。',
+   angle:'拆解"英雄式出场"三要素：环绕、慢动作、低机位', st:''},
+  {id:11, cat:'learn', tag:'🖼 构图', title:'三分法别写 rule of thirds：换成方位描述成功率高一倍', srcName:'小红书', date:'07-23', link:'https://www.xiaohongshu.com',
+   learn:'直接写 rule of thirds 出片不稳；改成 "subject positioned at the left third of frame" 这种明确方位描述，成功率明显提高。',
+   angle:'"构图翻译成 AI 听得懂的话"系列第 1 集：三分法', st:''},
+  {id:12, cat:'learn', tag:'🎨 配色', title:'"橙青色调"最稳写法：肤色保橙、阴影压青、夜景加霓虹轮廓光', srcName:'B站', date:'07-24', link:'https://www.bilibili.com',
+   learn:'核心写法 teal & orange + 场景词——肤色保橙（warm skin tones）、阴影压青（teal shadows）；夜景加一句 neon rim light，质感直接上一档。',
+   angle:'给 3 组可直接抄的配色提示词（肤色 / 夜景 / 黄昏）', st:''},
+  {id:13, cat:'learn', tag:'💡 布光', title:'底光 = 诡异感公式：lit from below + 冷色调，一招出悬疑', srcName:'抖音', date:'07-22', link:'https://www.douyin.com',
+   learn:'lit from below（底光）会让五官阴影倒置，天然诡异；搭配 cold tone 冷色调，一条公式出悬疑氛围。求婚、教堂场景慎用。',
+   angle:'光影情绪系列：一种布光 = 一种情绪，底光篇', st:''},
+  {id:14, cat:'learn', tag:'📝 提示词', title:'"四段式提示词"走红：景别→主体→光线→运镜，废片率大降', srcName:'小红书', date:'07-23', link:'https://www.xiaohongshu.com',
+   learn:'按固定顺序写四段——景别（close-up）→ 主体（外貌+动作）→ 光线（golden hour, soft light）→ 运镜（slow dolly in），AI 不再"自由发挥"。',
+   angle:'同一画面"随手写 vs 四段式"前后对比教学', st:''},
+  {id:15, cat:'learn', tag:'📝 提示词', title:'这 8 个提示词别再写了：beautiful / high quality 全是无效词', srcName:'B站', date:'07-21', link:'https://www.bilibili.com',
+   learn:'"beautiful, high quality, masterpiece" 这类空词基本无效还占权重；有效的是具体排斥项：no distorted hands, no extra limbs, no watermark。',
+   angle:'"提示词断舍离"：删掉这 8 个词，画面立刻干净', st:''},
+  {id:16, cat:'learn', tag:'💡 布光', title:'丁达尔光写法爆火：一个关键词让教堂 / 森林场景神圣感拉满', srcName:'抖音', date:'07-20', link:'https://www.douyin.com',
+   learn:'关键词 volumetric light / god rays，配合 dust particles（尘埃粒子）效果最佳；场景要暗，光才有形状。',
+   angle:'"神圣感光线"公式：教堂、森林、清晨街道三个模板', st:''},
+
+  /* ----- 🔥 爆款拆解 ----- */
+  {id:17, cat:'case', tag:'', title:'500 万播放的"一镜到底"AI 短片：节奏公式 = 场景数 × 7 秒', srcName:'B站', date:'07-25', link:'https://www.bilibili.com',
+   learn:'40 秒无剪辑点，每个场景 6~8 秒，全部用"前景遮挡"做转场衔接；可抄的节奏公式 = 场景数 × 7 秒。',
+   angle:'拉片拆解——镜头时长和遮挡转场，普通人怎么抄', st:''},
+  {id:18, cat:'case', tag:'', title:'"AI 复原老电影"点赞 80 万：情绪价值大于技术难度', srcName:'抖音', date:'07-24', link:'https://www.douyin.com',
+   learn:'流程 = 老片截图 → AI 上色（vintage colorize）→ 补帧到 4K；评论区全在求教程，情绪价值大于技术难度。',
+   angle:'跟一条"手把手教你复原家里老录像带"，工具链全公开', st:''},
+  {id:19, cat:'case', tag:'', title:'翻车合集也能爆？"AI 视频穿帮瞬间"合集播放破 300 万', srcName:'B站', date:'07-23', link:'https://www.bilibili.com',
+   learn:'把 AI 生成的翻车画面（多手指、脸部崩坏）做成合集，配上"避坑指南"式解说，娱乐 + 教学双吃。',
+   angle:'拍一条"AI 视频常见翻车瞬间合集"，用翻车讲避坑', st:''},
+  {id:20, cat:'case', tag:'', title:'同一段提示词喂给 5 个工具：对比类视频为什么永远有流量', srcName:'YouTube', date:'07-22', link:'https://www.youtube.com',
+   learn:'对比类内容的流量密码 = 同一变量 + 直观分屏；观众不用懂技术，肉眼就能投票。',
+   angle:'做一条"5 工具同题对比"，结尾让观众评论区投票', st:''},
+  {id:21, cat:'case', tag:'', title:'"让 AI 拍出 90 年代港风"：复古颗粒感写法带火一批账号', srcName:'小红书', date:'07-22', link:'https://www.xiaohongshu.com',
+   learn:'关键词组合：1990s Hong Kong film + film grain + warm tungsten light；加 slightly faded 更出味道。',
+   angle:'"港风电影感"公式拆解：3 个关键词 + 2 个避坑点', st:''},
+  {id:22, cat:'case', tag:'', title:'第一视角穿越机视频爆火：FPV drone 写法 + 场景清单被疯转', srcName:'B站', date:'07-21', link:'https://www.bilibili.com',
+   learn:'FPV drone shot + 连续场景描述（穿过窗户、掠过桌面），速度词用 fast-paced；场景越日常越震撼。',
+   angle:'做一条"穿越机视角看我家"，展示 FPV 写法模板', st:''},
+  {id:23, cat:'case', tag:'', title:'猫咪当电影主角：拟人化 AI 短剧 7 天涨粉 20 万', srcName:'抖音', date:'07-20', link:'https://www.douyin.com',
+   learn:'动物主角 + 人类剧情 = 天然反差萌；角色固定用同一张猫图 + 角色一致性工具，剧情套用经典短剧桥段。',
+   angle:'"动物主角短剧"入门：角色图怎么做、剧情从哪抄', st:''},
+  {id:24, cat:'case', tag:'', title:'"末日风"AI 场景大片：wide shot + 体积雾的压迫感公式', srcName:'B站', date:'07-19', link:'https://www.bilibili.com',
+   learn:'wide shot 大远景 + volumetric fog（体积雾）+ 渺小人物，压迫感的来源是"大场景小人物"的比例差。',
+   angle:'"末日氛围感"公式：远景、雾、渺小人物三件套', st:''}
+];
+
+const $ = id => document.getElementById(id);
+let curCat = null, openId = null;
+
+/* ---------- 第一层：分类卡 ---------- */
+function pending(catKey){ return items.filter(i=>i.cat===catKey && !i.st); }
+function renderCats(){
+  $('catCards').innerHTML = CATS.map(c=>{
+    const list = pending(c.key);
+    const latest = list[0];
+    return `<div class="ccard" data-cat="${c.key}">
+      <div class="ccard-top">
+        <span class="ccard-ico">${c.icon}</span>
+        <span class="ccard-name">${c.name}</span>
+        <span class="ccard-badge ${list.length?'':'zero'}">${list.length ? '🔵 '+list.length+' 条' : '✓ 已扫完'}</span>
+      </div>
+      <div class="ccard-desc">${c.desc}</div>
+      ${latest?`<div class="ccard-prev">最新：${latest.title}</div>`:'<div class="ccard-prev">—</div>'}
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.ccard').forEach(el=>el.onclick=()=>openModal(el.dataset.cat));
+}
+
+/* ---------- 第二层：列表弹窗 ---------- */
+function openModal(catKey){
+  curCat = catKey; openId = null;
+  const c = CATS.find(x=>x.key===catKey);
+  $('mTitle').textContent = c.icon + ' ' + c.name;
+  renderList();
+  $('radarMask').classList.add('show');
+}
+function closeModal(){ $('radarMask').classList.remove('show'); curCat = null; }
+
+function renderList(){
+  const list = items.filter(i=>i.cat===curCat);
+  $('mMeta').textContent = `07-26 08:03 更新 · 待处理 ${pending(curCat).length} / ${list.length} 条`;
+  if(!list.length){ $('mList').innerHTML = '<div class="modal-empty">这批都处理完了 ✅</div>'; return; }
+  $('mList').innerHTML = list.map(i=>{
+    const state = i.st==='topic' ? '<span class="ritem-state">✅ 已转选题</span>'
+               : i.st==='ref'   ? '<span class="ritem-state">📥 已收藏</span>' : '';
+    return `<div class="ritem ${openId===i.id?'open':''}" data-id="${i.id}">
+      <div class="ritem-head" data-toggle="${i.id}">
+        ${i.tag?`<span class="ritem-tag">${i.tag}</span>`:''}
+        <div class="ritem-title">${i.title}</div>
+        ${state}
+        <span class="ritem-src">${i.srcName} · ${i.date}</span>
+        <span class="ritem-chev">▾</span>
+      </div>
+      <div class="ritem-body">
+        <div class="ritem-learn"><b>📖 学什么：</b>${i.learn}</div>
+        <div class="ritem-angle">💡 选题角度：${i.angle}</div>
+        <div class="ritem-foot">
+          <a class="ritem-link" href="${i.link}" target="_blank">🔗 查看原文（${i.srcName}）</a>
+          <div class="ritem-acts">
+            ${i.st!=='topic' ? `<button class="mini-btn" data-act="topic" data-id="${i.id}">🎯 转选题</button>` : ''}
+            ${i.st!=='ref'   ? `<button class="mini-btn" data-act="ref" data-id="${i.id}">📥 收进参考库</button>` : ''}
+            <button class="mini-btn plain" data-act="skip" data-id="${i.id}">× 忽略</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  $('mList').querySelectorAll('[data-toggle]').forEach(el=>el.onclick=()=>{
+    const id = +el.dataset.toggle;
+    openId = (openId===id) ? null : id;   // 手风琴：同刻只开一条
+    renderList();
+  });
+  $('mList').querySelectorAll('[data-act]').forEach(el=>el.onclick=e=>{
+    e.stopPropagation();
+    const id = +el.dataset.id, act = el.dataset.act;
+    if(act==='skip'){ items = items.filter(x=>x.id!==id); if(openId===id) openId=null; }
+    else { items.find(x=>x.id===id).st = act; }
+    renderList(); renderCats();
+  });
+}
+
+/* ---------- 弹窗关闭：遮罩 / ✕ / ESC ---------- */
+$('mClose').onclick = closeModal;
+$('radarMask').onclick = e=>{ if(e.target.id==='radarMask') closeModal(); };
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && curCat) closeModal(); });
+
+/* ---------- 启动（支持 #cat=序号&open=条目id 直接打开，便于预览截图） ---------- */
+renderCats();
+const h = location.hash;
+const mc = h.match(/cat=(\d)/), mo = h.match(/open=(\d+)/);
+if(mc){ const c = CATS[+mc[1]]; if(c){ openModal(c.key); if(mo) openId = +mo[1], renderList(); } }
+</script>
+</body>
+</html>
