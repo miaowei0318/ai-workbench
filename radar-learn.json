@@ -1,0 +1,50 @@
+[
+  {
+    "cat": "learn",
+    "tag": "🎥 运镜",
+    "title": "【全100集】AI真人短剧制作保姆级教程：打光/调度/分镜/运镜系统课",
+    "srcName": "B站·AI电影制作课程",
+    "date": "07-22",
+    "ev": "233920",
+    "link": "https://www.bilibili.com/video/BV1BLgr6zExp",
+    "learn": "59分钟8章合集，章节编排本身就是可照抄的学习路径：01 AI电影制作全流程 → 02 打光篇 → 03 调度篇 → 04 分镜思维篇 → 05 高级感电影运镜 → 06 电影镜头角度 → 07 AI人物真实感增强 → 08 AI视频真实感增强。核心逻辑：先解决画面质感（打光+调度），再解决叙事（分镜思维+运镜+镜头角度），最后两章专门去AI味（人物/视频真实感增强）。做AI真人短剧可按此顺序逐章跟练，课程资料在评论区置顶获取。",
+    "promptText": "",
+    "angle": "把打光→调度→分镜→运镜→真实感串成一条学习路径的真人短剧系统课"
+  },
+  {
+    "cat": "learn",
+    "tag": "📝 提示词",
+    "title": "Seedance 2.5发布详解：30秒长叙事时代的提示词六步结构",
+    "srcName": "UIED",
+    "date": "08-01",
+    "ev": "",
+    "link": "https://www.uied.cn/posts/921490",
+    "learn": "30秒视频提示词按六步写：①先写整体目标（例：生成一段30秒的电影感产品广告，包含原生音效与背景音乐）②标注每份参考素材用途（人物参考@图片1，服装参考@图片2，运镜参考@视频1，音乐节奏参考@音频1）③用时间戳排故事节拍（0—6秒建立场景→7—15秒发现产品→16—24秒演示功能→25—30秒品牌收尾）④明确镜头方式：写'一镜到底、手持稳定器跟拍、无剪辑'，或指定近景/中景/特写/全景四个逻辑镜头⑤写明不可变内容：保持五官、服装、商品结构、品牌颜色和声音一致，不得生成额外字幕，不要改变Logo⑥质感约束：自然肤质、低饱和电影色彩、真实光影，避免过度磨皮和塑料质感。关键新能力：单次30秒、最多30图+10视频+10音频参考、支持时间戳级编辑；区域编辑可只改运镜不重生成人物（写法：保持人物、动作和视觉风格不变，只调整摄影机运动）。注意：一镜到底对多人互动/快速动作仍会人物漂移，多轮延长会累积五官/音色/色彩偏移。",
+    "promptText": "0—5秒：人物从门外进入房间，镜头缓慢后退。\n6—10秒：人物拿起桌上的产品，镜头切换至手部特写。\n11—20秒：展示产品使用过程，镜头环绕主体。\n21—30秒：人物面向镜头说出品牌口号，画面拉远结束。\n\n保持人物、动作和视觉风格不变，只调整摄影机运动。",
+    "angle": "30秒时代，提示词从写一句话升级为写分镜时间表"
+  },
+  {
+    "cat": "learn",
+    "tag": "📝 提示词",
+    "title": "44条Seedance 2.5官方预览提示词库：逐条配样片可抄",
+    "srcName": "Renoise",
+    "date": "07-09",
+    "ev": "",
+    "link": "https://renoise.ai/zh-CN/showcase/awesome-seedance-2-5-prompts",
+    "learn": "精选自ByteDance/Volcano Ark官方样片库的44条提示词，每条配结果片段。官方提示词通用骨架：①开场写整体规格（Ultra-premium cinematic production, photoreal, IMAX composition, volumetric lighting）②Camera声明（One continuous shot, no cut）③Audio声明（No music, only sound effects and voice）④主体按机位运动线写：cranes up and orbits slowly in → arriving at a medium shot → continues its orbit into a close-up → pulls back and tilts down，每个机位配具体光影（Practical rim light from the setting sun catches one side of her face, the other side in shadow）⑤结尾Hold住细节+声音渐强收尾。社区30秒长片写法：时间轴分拍（0-5s/5-9s/9-13s/13-15s）+ quality兜底约束（single continuous take, zero duplicated or deformed faces, anatomically correct hands, no artifacts）。动作片写法：先立规则（Every enemy must enter visibly before being defeated. Sword strikes must connect logically. No teleporting characters），再按 00:00–00:02 分拍写横向tracking/甩镜/前景遮挡转场。",
+    "promptText": "A seamless cinematic sequence on a vast frozen mountain peak during blue hour beneath a violent arctic blizzard. Endless snow-covered cliffs, towering glaciers, ancient stone ruins, and a colossal weathered throne carved into the mountain overlook an endless frozen kingdom. Thick snow falls through the air while powerful winds carry swirling ice particles across the landscape. The atmosphere feels ancient, sacred, and forgotten. Kael, a fearless legendary warrior with shoulder-length wavy black hair, sharp amber eyes, a rugged face with a subtle scar above his left eyebrow, walks slowly and confidently through the deep snow toward the ancient throne. He wears weathered black dragon-scale armor with intricate silver engravings, heavy armored boots, leather belts across his chest, and a long tattered black cloak flowing naturally in the wind. A massive glowing blue runic greatsword rests on his back, casting a soft blue light onto the snow. The camera begins with an ultra-wide aerial shot before descending into one smooth forward tracking shot behind Kael. Every footstep leaves deep impressions in the snow. His cloak and hair react naturally to the storm while distant thunder echoes through the mountains. Kael reaches the ancient throne and slowly unsheathes his glowing blue runic greatsword. Without hesitation, he drives the sword into the frozen ground before the throne. The instant the blade touches the ice, brilliant blue energy surges outward in glowing cracks racing across the mountain. The storm suddenly becomes silent. Thousands of ancient spectral warriors begin rising from beneath the snow across the mountain. Their translucent blue armor glows softly as they emerge in complete silence. One after another, they kneel toward Kael, forming an endless ghostly army stretching across the frozen landscape. The camera slowly pulls back and rises high above the mountain, revealing Kael standing alone before the throne with his glowing sword planted in the ice while an enormous spectral army kneels beneath him. Snow continues falling peacefully as blue light illuminates the entire mountain. The sequence ends with a breathtaking ultra-wide aerial view before fading to black. Ultra-photorealistic fantasy filmmaking, Hollywood blockbuster, IMAX scale, cinematic blue-hour lighting, volumetric snowfall, realistic cloth and hair simulation, physically accurate animation, ray-traced reflections on ice, atmospheric fog, subtle anamorphic lens flares, smooth continuous camera movement, one uninterrupted shot, no cuts, no glitches, no morphing, consistent character identity, emotional cinematic ending, masterpiece, 8K.",
+    "angle": "官方提示词=机位运动脚本+光影逐镜注解，不是形容词堆砌"
+  },
+  {
+    "cat": "learn",
+    "tag": "📝 提示词",
+    "title": "Seedance 2.5使用指南：先建参考素材包，再写提示词",
+    "srcName": "Flick Blog",
+    "date": "07-23",
+    "ev": "",
+    "link": "https://flick.art/zh/blog/seedance-2-5-guide",
+    "learn": "核心方法论：写提示词之前先建参考素材包（Reference Pack），分三个模块——①身份模块：正面肖像、3/4角度、侧面轮廓、全身服装照、有转身动作需背面视图、头发/配饰/疤痕特写、已批准的静帧；②服装道具模块：服装正反面、鞋、首饰、武器/工具/乐器等必须跨镜一致的细节全部单独给参考，别指望模型记住；③视觉块：2-3个项目关键帧+光照参考+色彩参考+镜头/景深参考，锁定整条片子的调色和镜头语言。提示词只负责指导动作，身份信息交给参考图承载。最佳实践：每个参考素材明确标记角色用途；提示词聚焦单个镜头；干净的8秒镜头好过漂移的30秒；审核通过的静帧存为后续参考；镜头基本对就用区域编辑救，不为小问题整镜重生成。常见错误：堆50张无角色标记的参考图、在提示词里过度描述角色、为用满30秒而用30秒、忽略音频指导。",
+    "promptText": "Use [reference/block] for [role].\n[Shot type / camera movement] of [subject] in [setting].\n[Subject action over time].\n[Environmental motion over time].\nAudio: [dialogue, ambience, foley, music/pacing direction].\nStyle: [lighting, lens, grade, texture].\nConstraints: [preserve identity, preserve wardrobe, no text, no logos, no extra characters].\n\n示例：\nUse the identity references for the main character's face and wardrobe.\nUse the look references for the cool blue night grade.\nUse the motion reference for the slow handheld camera rhythm.\nMedium tracking shot of the character walking through a narrow train platform at midnight.\nThey move cautiously, pause when a train passes behind them, then turn toward camera at the end.\nSteam drifts across the platform, fluorescent lights flicker, rain runs down the metal roof.\nAudio: train rumble, wet footsteps, distant station announcement, no music.\nCinematic realism, shallow depth of field, 35mm film texture.\nPreserve the character's face, coat, hair, and bag. No readable text, no extra people.",
+    "angle": "角色一致性不靠提示词硬写，靠参考素材包模块化锁死"
+  }
+]
